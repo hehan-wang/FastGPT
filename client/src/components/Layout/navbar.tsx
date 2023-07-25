@@ -128,7 +128,7 @@ const Navbar = ({ unread }: { unread: number }) => {
       <Box>
         <Link
           as={NextLink}
-          href="https://github.com/labring/FastGPT"
+          href="https://github.com/hehan-wang"
           target={'_blank'}
           {...itemStyles}
           color={'#9096a5'}

@@ -172,35 +172,32 @@ const Home = () => {
           fontSize={['40px', '70px']}
           letterSpacing={'5px'}
         >
-          FastGpt
+          问问知识库
         </Box>
         <Box className={styles.textlg} fontWeight={'bold'} fontSize={['30px', '50px']}>
-          三分钟
-        </Box>
-        <Box className={styles.textlg} fontWeight={'bold'} fontSize={['30px', '50px']}>
-          搭建 AI 知识库
+          用你的数据，定制自己的AI
         </Box>
 
         <Flex flexDirection={['column', 'row']} my={5}>
-          <Button
-            mr={[0, 5]}
-            mb={[5, 0]}
-            fontSize={['xl', '3xl']}
-            h={'auto'}
-            py={[2, 3]}
-            variant={'base'}
-            border={'2px solid'}
-            borderColor={'myGray.800'}
-            transition={'0.3s'}
-            _hover={{
-              bg: 'myGray.800',
-              color: 'white'
-            }}
-            leftIcon={<MyIcon name={'git'} w={'20px'} />}
-            onClick={() => window.open('https://github.com/labring/FastGPT', '_blank')}
-          >
-            Stars {(star / 1000).toFixed(1)}k
-          </Button>
+          {/*<Button*/}
+          {/*  mr={[0, 5]}*/}
+          {/*  mb={[5, 0]}*/}
+          {/*  fontSize={['xl', '3xl']}*/}
+          {/*  h={'auto'}*/}
+          {/*  py={[2, 3]}*/}
+          {/*  variant={'base'}*/}
+          {/*  border={'2px solid'}*/}
+          {/*  borderColor={'myGray.800'}*/}
+          {/*  transition={'0.3s'}*/}
+          {/*  _hover={{*/}
+          {/*    bg: 'myGray.800',*/}
+          {/*    color: 'white'*/}
+          {/*  }}*/}
+          {/*  leftIcon={<MyIcon name={'git'} w={'20px'} />}*/}
+          {/*  onClick={() => window.open('https://github.com/labring/FastGPT', '_blank')}*/}
+          {/*>*/}
+          {/*  Stars {(star / 1000).toFixed(1)}k*/}
+          {/*</Button>*/}
           <Button
             fontSize={['xl', '3xl']}
             h={'auto'}
@@ -212,21 +209,21 @@ const Home = () => {
         </Flex>
       </Flex>
 
-      <Box w={'100%'} mt={'100vh'} px={[5, 10]} pb={[5, 10]}>
-        <Card p={5} lineHeight={2}>
-          <Markdown source={data} isChatting={false} />
-        </Card>
+      {/*<Box w={'100%'} mt={'100vh'} px={[5, 10]} pb={[5, 10]}>*/}
+      {/*  <Card p={5} lineHeight={2}>*/}
+      {/*    <Markdown source={data} isChatting={false} />*/}
+      {/*  </Card>*/}
 
-        <Card p={5} mt={4} textAlign={'center'}>
-          {beianText && (
-            <Link href="https://beian.miit.gov.cn/" target="_blank">
-              {beianText}
-            </Link>
-          )}
+      {/*  <Card p={5} mt={4} textAlign={'center'}>*/}
+      {/*    {beianText && (*/}
+      {/*      <Link href="https://beian.miit.gov.cn/" target="_blank">*/}
+      {/*        {beianText}*/}
+      {/*      </Link>*/}
+      {/*    )}*/}
 
-          <Box>Made by FastGpt Team.</Box>
-        </Card>
-      </Box>
+      {/*    <Box>Made by FastGpt Team.</Box>*/}
+      {/*  </Card>*/}
+      {/*</Box>*/}
     </Flex>
   );
 };
