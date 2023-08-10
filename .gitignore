@@ -10,7 +10,8 @@ build/
 # misc
 .DS_Store
 *.pem
-
+.idea
+/files/deploy/fastgpt/pg
 # debug
 npm-debug.log*
 yarn-debug.log*
