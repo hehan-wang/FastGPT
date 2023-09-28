@@ -1,14 +1,60 @@
-<svg width="1041" height="1348" viewBox="0 0 1041 1348" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M340.837 0.33933L681.068 0.338989V0.455643C684.032 0.378397 686.999 0.339702 689.967 0.339702C735.961 0.3397 781.504 9.62899 823.997 27.6772C866.49 45.7254 905.099 72.1791 937.622 105.528C970.144 138.877 995.942 178.467 1013.54 222.04C1031.14 265.612 1040.2 312.312 1040.2 359.474L340.836 359.474L340.836 1347.84C296.157 1347.84 251.914 1338.55 210.636 1320.49C169.357 1302.43 131.85 1275.95 100.257 1242.58C68.6636 1209.21 43.6023 1169.59 26.5041 1125.99C11.3834 1087.43 2.75216 1046.42 0.957956 1004.81H0.605869L0.605897 368.098H0.70363C0.105752 341.831 2.23741 315.443 7.14306 289.411C20.2709 219.745 52.6748 155.754 100.257 105.528C147.839 55.3017 208.462 21.0975 274.461 7.24017C296.426 2.62833 318.657 0.339101 340.837 0.33933Z" fill="url(#paint0_linear_1172_228)"/>
-<path d="M633.639 904.645H513.029V576.37H635.422V576.377C678.161 576.607 720.454 585.093 759.951 601.37C799.997 617.874 836.384 642.064 867.033 672.559C897.683 703.054 921.996 739.257 938.583 779.101C955.171 818.944 963.709 861.648 963.709 904.775H633.639V904.645Z" fill="url(#paint1_linear_1172_228)"/>
-<defs>
-<linearGradient id="paint0_linear_1172_228" x1="520.404" y1="0.338989" x2="520.404" y2="1347.84" gradientUnits="userSpaceOnUse">
-<stop stop-color="#326DFF"/>
-<stop offset="1" stop-color="#8EAEFF"/>
-</linearGradient>
-<linearGradient id="paint1_linear_1172_228" x1="738.369" y1="576.37" x2="738.369" y2="904.775" gradientUnits="userSpaceOnUse">
-<stop stop-color="#326DFF"/>
-<stop offset="1" stop-color="#8EAEFF"/>
-</linearGradient>
-</defs>
+
+<svg
+  version="1.0"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="2400"
+  height="1800"
+>
+  <svg
+    version="1.0"
+    xmlns="http://www.w3.org/2000/svg"
+    width="0"
+    height="0"
+    viewBox="0 0 340.000000 250.000000"
+    preserveAspectRatio="xMidYMid meet"
+    color-interpolation-filters="sRGB"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+  >
+    <defs>
+      <pattern
+        id="watermark"
+        patternUnits="userSpaceOnUse"
+        width="100%"
+        height="100%"
+      >
+        <image
+          xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAGQCAYAAAAUdV17AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyhpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTM4IDc5LjE1OTgyNCwgMjAxNi8wOS8xNC0wMTowOTowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTcgKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RTVGN0VCRjlGMjcwMTFFOUIyNjM4MDRGRkI5QkJENjEiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RTVGN0VCRkFGMjcwMTFFOUIyNjM4MDRGRkI5QkJENjEiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFNUY3RUJGN0YyNzAxMUU5QjI2MzgwNEZGQjlCQkQ2MSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFNUY3RUJGOEYyNzAxMUU5QjI2MzgwNEZGQjlCQkQ2MSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pgp++w8AAAPuSURBVHja7NSxDQAACMMw+v/R5QoGJPuEDEnbAfgghgUYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgVgWIBhARgWgGEBhgVgWACGBRgWgGEBGBZgWACGBWBYgGEBGBaAYQGGBWBYgGEZFmBYAIYFGBaAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgVgWIBhARgWgGEBhgVgWACGBRgWgGEBhmVYgGEBGBZgWACGBWBYgGEBGBaAYQGGBWBYAIYFGBaAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgUYlgqAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgVgWIBhARgWgGEBhgVgWACGBRgWgGEBGBZgWACGBRgWgGEBGBZgWACGBWBYgGEBGBaAYQGGBWBYAIYFGBaAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgUYFoBhARgWYFgAhgVgWIBhARgWgGEBhgVgWACGBRgWgGEBGBZgWACGBWBYgGEBGBaAYQGGBWBYAIYFGBaAYQEYFmBYAIYFGBaAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgVgWIBhARgWgGEBhgVgWACGBRgWgGEBGBZgWACGBRgWgGEBGBZgWACGBWBYgGEBGBaAYQGGBWBYAIYFGBaAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgUYFoBhARgWYFgAhgVgWIBhARgWgGEBhgVgWACGBRgWgGEBGBZgWACGBWBYgGEBGBaAYQGGBWBYAIYFGBaAYQGGZViAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgVgWIBhARgWgGEBhgVgWACGBRgWgGEBGBZgWACGBRiWYQGGBWBYgGEBGBaAYQGGBWBYAIYFGBaAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgVgWIBhARgWYFiGBRgWgGEBhgVgWACGBRgWgGEBGBZgWACGBWBYgGEBGBaAYQGGBWBYAIYFGBaAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFiAYakAGBaAYQGGBWBYAIYFGBaAYQEYFmBYAIYFYFiAYQEYFoBhAYYFYFgAhgUYFoBhARgWYFgAhgVgWIBhARgWgGEBhgVgWIBhARgWgGEBhgVgWACGBRgWgGEBGBZgWACGBWBYgGEBGBaAYQGGBWBYAIYFGBaAYQEYFmBYAIYFYFiAYQFcWgEGAJzsrR2jCcEwAAAAAElFTkSuQmCC"
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+        ></image>
+      </pattern>
+    </defs>
+  </svg>
+  <rect
+    x="0"
+    y="0"
+    width="100%"
+    height="100%"
+    fill="rgba(255,255,255,0)"
+    fill-opacity="1"
+  ></rect>
+  <svg
+    version="1.0"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    x="0"
+    y="0"
+    width="2400"
+    height="1800"
+    viewBox="0 0 340.000000 250.000000"
+    preserveAspectRatio="xMidYMid meet"
+    color-interpolation-filters="sRGB"
+  >
+    <defs><linearGradient id="92" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#fa71cd"/> <stop offset="100%" stop-color="#9b59b6"/></linearGradient><linearGradient id="93" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f9d423"/> <stop offset="100%" stop-color="#f83600"/></linearGradient><linearGradient id="94" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#0064d2"/> <stop offset="100%" stop-color="#1cb0f6"/></linearGradient><linearGradient id="95" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f00978"/> <stop offset="100%" stop-color="#3f51b1"/></linearGradient><linearGradient id="96" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#7873f5"/> <stop offset="100%" stop-color="#ec77ab"/></linearGradient><linearGradient id="97" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f9d423"/> <stop offset="100%" stop-color="#e14fad"/></linearGradient><linearGradient id="98" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#009efd"/> <stop offset="100%" stop-color="#2af598"/></linearGradient><linearGradient id="99" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ffcc00"/> <stop offset="100%" stop-color="#00b140"/></linearGradient><linearGradient id="100" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#d51007"/> <stop offset="100%" stop-color="#ff8177"/></linearGradient><linearGradient id="102" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#a2b6df"/> <stop offset="100%" stop-color="#0c3483"/></linearGradient><linearGradient id="103" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#7ac5d8"/> <stop offset="100%" stop-color="#eea2a2"/></linearGradient><linearGradient id="104" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#00ecbc"/> <stop offset="100%" stop-color="#007adf"/></linearGradient><linearGradient id="105" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b88746"/> <stop offset="100%" stop-color="#fdf5a6"/></linearGradient></defs> <g class="iconmbgsvg" transform="translate(54.5,9.5)"><g fill="#6e45e2" hollow-target="text"><g mask="url(#b5d59727-da9d-4263-a6bb-90aa92825f5a)"><g><rect fill="#6e45e2" fill-opacity="0" stroke-width="2" x="0" y="0" width="231.00000000000009" height="231.00000000000009" class="image-rect"/> <svg filter="url(#colors7920929576)" x="0" y="0" width="231.00000000000009" height="231.00000000000009" filtersec="colorsf4411540340" class="image-svg-svg primary" style="overflow: visible;"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M60 0c22.091 0 40 17.909 40 40v20c0 22.091-17.909 40-40 40H40C17.909 100 0 82.091 0 60V40C0 17.909 17.909 0 40 0h20zm0 5H40C20.863 5 5.314 20.358 5.005 39.421L5 40v20c0 19.137 15.358 34.686 34.421 34.995L40 95h20c19.137 0 34.686-15.358 34.995-34.421L95 60V40C95 20.863 79.642 5.314 60.579 5.005L60 5z" fill="#333" fill-rule="nonzero"/></svg></svg> <defs><filter id="colors7920929576"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" class="icon-feColorMatrix "/></filter> <filter id="colorsf4411540340"><feColorMatrix type="matrix" values="0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 1 0" class="icon-fecolormatrix"/></filter> <filter id="colorsb9477571586"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" class="icon-fecolormatrix"/></filter></defs></g><rect v-gra="id" width="243" height="243" transform="translate(-6, -6)" style="pointer-events:none;" fill="url(#qU_gerKLbak4ZYt_3HRjy)"/></g> <g transform="translate(47.368370056152344,53.11100387573242)"><g fill-rule="" class="tp-name" fill="url(#9fa80b33-88e8-4ddf-87b9-99a1799668d6)"><g transform="scale(1.7800000000000007)"><g><path d="M28-46.2L28-20C28-18.1 29.1-17 31-17L61.2-17C63.1-17 64.2-18.1 64.2-20L64.2-46.2C64.2-48.1 63.1-49.2 61.2-49.2L31-49.2C29.1-49.2 28-48.1 28-46.2ZM43.3-27.5L43.3-38.7C43.3-40 44-40.7 45.3-40.7L46.9-40.7C48.2-40.7 48.9-40 48.9-38.7L48.9-27.5C48.9-26.2 48.2-25.5 46.9-25.5L45.3-25.5C44-25.5 43.3-26.2 43.3-27.5ZM64.1 0.9L77.3 0.9C81.2 0.9 84.1-1.8 84.1-5.7L84.1-64.3C84.1-66.2 83-67.3 81.1-67.3L31-67.3C29.1-67.3 28-66.2 28-64.3L28-60.8C28-58.9 29.1-57.8 31-57.8L65-57.8C66.3-57.8 67-57.1 67-55.8L67-9.8C67-8.8 66.7-8.1 66.1-7.3L62.4-2.8C60.8-0.8 61.6 0.9 64.1 0.9ZM8.1-51L8.1-2.1C8.1-0.2 9.2 0.9 11.1 0.9L22.2 0.9C24.1 0.9 25.2-0.2 25.2-2.1L25.2-51C25.2-52.9 24.1-54 22.2-54L11.1-54C9.2-54 8.1-52.9 8.1-51ZM7.6-66L8.6-58.7C8.9-56.8 10-55.9 11.8-55.9L22.9-55.9C24.9-55.9 25.9-57 25.6-59.1L24.6-66.4C24.3-68.3 23.2-69.2 21.4-69.2L10.3-69.2C8.3-69.2 7.3-68.1 7.6-66Z" transform="translate(-7.547606945037842, 69.19999694824219)"/></g> </g></g> </g></g></g><mask id="86ec757f-a61b-4f34-9ff3-03522115912a"><g fill="white"><g><rect fill-opacity="1" stroke-width="2" x="0" y="0" width="231.00000000000009" height="231.00000000000009" class="image-rect"/> <svg x="0" y="0" width="231.00000000000009" height="231.00000000000009" class="image-svg-svg primary" style="overflow: visible;" filter="url(#colorsf4411540340)"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M60 0c22.091 0 40 17.909 40 40v20c0 22.091-17.909 40-40 40H40C17.909 100 0 82.091 0 60V40C0 17.909 17.909 0 40 0h20zm0 5H40C20.863 5 5.314 20.358 5.005 39.421L5 40v20c0 19.137 15.358 34.686 34.421 34.995L40 95h20c19.137 0 34.686-15.358 34.995-34.421L95 60V40C95 20.863 79.642 5.314 60.579 5.005L60 5z" fill-rule="nonzero"/></svg></svg> <defs> </defs></g></g> <g transform="translate(47.368370056152344,53.11100387573242)" fill="black" stroke="black" stroke-width="6" stroke-linejoin="round"><g fill-rule="" class="tp-name"><g transform="scale(1.7800000000000007)"><g><path d="M28-46.2L28-20C28-18.1 29.1-17 31-17L61.2-17C63.1-17 64.2-18.1 64.2-20L64.2-46.2C64.2-48.1 63.1-49.2 61.2-49.2L31-49.2C29.1-49.2 28-48.1 28-46.2ZM43.3-27.5L43.3-38.7C43.3-40 44-40.7 45.3-40.7L46.9-40.7C48.2-40.7 48.9-40 48.9-38.7L48.9-27.5C48.9-26.2 48.2-25.5 46.9-25.5L45.3-25.5C44-25.5 43.3-26.2 43.3-27.5ZM64.1 0.9L77.3 0.9C81.2 0.9 84.1-1.8 84.1-5.7L84.1-64.3C84.1-66.2 83-67.3 81.1-67.3L31-67.3C29.1-67.3 28-66.2 28-64.3L28-60.8C28-58.9 29.1-57.8 31-57.8L65-57.8C66.3-57.8 67-57.1 67-55.8L67-9.8C67-8.8 66.7-8.1 66.1-7.3L62.4-2.8C60.8-0.8 61.6 0.9 64.1 0.9ZM8.1-51L8.1-2.1C8.1-0.2 9.2 0.9 11.1 0.9L22.2 0.9C24.1 0.9 25.2-0.2 25.2-2.1L25.2-51C25.2-52.9 24.1-54 22.2-54L11.1-54C9.2-54 8.1-52.9 8.1-51ZM7.6-66L8.6-58.7C8.9-56.8 10-55.9 11.8-55.9L22.9-55.9C24.9-55.9 25.9-57 25.6-59.1L24.6-66.4C24.3-68.3 23.2-69.2 21.4-69.2L10.3-69.2C8.3-69.2 7.3-68.1 7.6-66Z" transform="translate(-7.547606945037842, 69.19999694824219)"/></g> </g></g> </g></mask><defs v-gra="od"><linearGradient x1="0" y1="1" x2="0" y2="0" id="9fa80b33-88e8-4ddf-87b9-99a1799668d6"><stop offset="0%" stop-color="#6e45e2"/><stop offset="100%" stop-color="#88d3ce"/></linearGradient><filter id="42443b3f1de60f6b6fd3b6a9844b4764" filterUnits="objectBoundingBox"><feColorMatrix type="matrix" values="0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 1 0"/></filter></defs><defs v-gra="id"><filter id="194a78d7-037b-4202-9553-ac63604dee80" filterUnits="userSpaceOnUse"><feColorMatrix type="matrix" values="0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 1 0"/></filter><linearGradient x1="0" y1="1" x2="0" y2="0" id="qU_gerKLbak4ZYt_3HRjy"><stop offset="0%" stop-color="#6e45e2"/><stop offset="100%" stop-color="#88d3ce"/></linearGradient><filter id="42443b3f1de60f6b6fd3b6a9844b4764" filterUnits="objectBoundingBox"><feColorMatrix type="matrix" values="0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 1 0"/></filter></defs><mask v-gra="im" id="b5d59727-da9d-4263-a6bb-90aa92825f5a"><g mask="url(#86ec757f-a61b-4f34-9ff3-03522115912a)" filter="url(#194a78d7-037b-4202-9553-ac63604dee80)"><g><rect fill="#6e45e2" fill-opacity="0" stroke-width="2" x="0" y="0" width="231.00000000000009" height="231.00000000000009" class="image-rect"/> <svg x="0" y="0" width="231.00000000000009" height="231.00000000000009" filtersec="colorsf4411540340" class="image-svg-svg primary" style="overflow: visible;"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M60 0c22.091 0 40 17.909 40 40v20c0 22.091-17.909 40-40 40H40C17.909 100 0 82.091 0 60V40C0 17.909 17.909 0 40 0h20zm0 5H40C20.863 5 5.314 20.358 5.005 39.421L5 40v20c0 19.137 15.358 34.686 34.421 34.995L40 95h20c19.137 0 34.686-15.358 34.995-34.421L95 60V40C95 20.863 79.642 5.314 60.579 5.005L60 5z" fill="#333" fill-rule="nonzero"/></svg></svg> <defs><filter id="colors7920929576"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" class="icon-fecolormatrix"/></filter> <filter id="colorsf4411540340"><feColorMatrix type="matrix" values="0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 0 0.99609375  0 0 0 1 0" class="icon-fecolormatrix"/></filter> <filter id="colorsb9477571586"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" class="icon-fecolormatrix"/></filter></defs></g></g></mask>
+  </svg>
 </svg>
+
+

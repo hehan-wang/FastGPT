@@ -62,7 +62,6 @@ jobs:
   push-to-docker-hub:
     needs: build-fastgpt-images
     runs-on: ubuntu-20.04
-    if: github.repository == 'labring/FastGPT'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -86,7 +85,6 @@ jobs:
         run: docker push ${{ secrets.DOCKER_IMAGE_NAME }}/fastgpt:${{env.IMAGE_TAG}}
   push-to-ali-hub:
     needs: build-fastgpt-images
-    if: github.repository == 'labring/FastGPT'
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
