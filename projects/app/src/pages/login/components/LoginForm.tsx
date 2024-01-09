@@ -157,14 +157,13 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
         </FormControl>
         {feConfigs?.docUrl && (
           <Box mt={7} fontSize={'sm'}>
-            使用即代表你同意我们的{' '}
-            <Link
-              href={getDocPath('/docs/agreement/disclaimer/')}
-              target={'_blank'}
-              color={'primary.500'}
-            >
-              免责声明
-            </Link>
+            使用即代表你同意我们的 {/*<Link*/}
+            {/*  href={getDocPath('/docs/agreement/disclaimer/')}*/}
+            {/*  target={'_blank'}*/}
+            {/*  color={'primary.500'}*/}
+            {/*>*/}
+            免责声明
+            {/*</Link>*/}
           </Box>
         )}
 

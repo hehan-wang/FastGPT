@@ -161,7 +161,7 @@ const Navbar = ({ unread }: { unread: number }) => {
         <MyTooltip label={t('common.system.Use Helper')} placement={'right-end'}>
           <Link
             {...itemStyles}
-            href={feConfigs?.chatbotUrl || getDocPath('/docs/intro')}
+            href={feConfigs?.docUrl || feConfigs?.chatbotUrl || getDocPath('/docs/intro')}
             target="_blank"
             mb={0}
             color={'#9096a5'}

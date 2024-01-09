@@ -45,11 +45,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 const defaultFeConfigs: FastGPTFeConfigsType = {
   show_emptyChat: true,
   show_git: true,
-  docUrl: 'https://doc.fastgpt.in',
-  openAPIDocUrl: 'https://doc.fastgpt.in/docs/development/openapi',
-  systemTitle: 'FastGPT',
+  docUrl: 'https://edo504m8t9.feishu.cn/docx/Yi4ydhZjvovc8Pxez7UcpHRJnVd',
+  openAPIDocUrl: 'https://edo504m8t9.feishu.cn/docx/OOhgdLobco1xeGxndVxc99Bnnkb',
+  systemTitle: '问问Agent',
   concatMd:
-    '* 项目开源地址: [FastGPT GitHub](https://github.com/labring/FastGPT)\n* 交流群: ![](https://doc.fastgpt.in/wechat-fastgpt.webp)',
+    '* 项目介绍: [问问Agent](https://edo504m8t9.feishu.cn/docx/Yi4ydhZjvovc8Pxez7UcpHRJnVd)\n* 交流群: ![](https://david-1255528809.cos.ap-beijing.myqcloud.com/hehan_art_qr_.png?t=158691b5-a44c-4dd1-98c6-e4a200bd8e75)',
   limit: {
     exportDatasetLimitMinutes: 0,
     websiteSyncLimitMinuted: 0
@@ -101,11 +101,11 @@ export async function initSystemConfig() {
     readConfigData('config.json')
   ]);
   const fileRes = JSON.parse(fileConfig) as FastGPTConfigFileType;
-
   // get config from database
   const config: FastGPTConfigFileType = {
     feConfigs: {
       ...defaultFeConfigs,
+      ...fileRes.feConfigs,
       ...(dbConfig.feConfigs || {}),
       isPlus: !!FastGPTProUrl
     },
