@@ -2,8 +2,7 @@ import { connectionMongo, type Model } from '../../common/mongo';
 const { Schema, model, models } = connectionMongo;
 import { ChatItemSchema as ChatItemType } from '@fastgpt/global/core/chat/type';
 import { ChatRoleMap } from '@fastgpt/global/core/chat/constants';
-import { customAlphabet } from 'nanoid';
-const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz1234567890', 24);
+import { getNanoid } from '@fastgpt/global/common/string/tools';
 import {
   TeamCollectionName,
   TeamMemberCollectionName
@@ -12,25 +11,9 @@ import { appCollectionName } from '../app/schema';
 import { userCollectionName } from '../../support/user/schema';
 import { ModuleOutputKeyEnum } from '@fastgpt/global/core/module/constants';
 
+export const ChatItemCollectionName = 'chatitems';
+
 const ChatItemSchema = new Schema({
-  dataId: {
-    type: String,
-    require: true,
-    default: () => nanoid()
-  },
-  appId: {
-    type: Schema.Types.ObjectId,
-    ref: appCollectionName,
-    required: true
-  },
-  chatId: {
-    type: String,
-    require: true
-  },
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: userCollectionName
-  },
   teamId: {
     type: Schema.Types.ObjectId,
     ref: TeamCollectionName,
@@ -41,23 +24,42 @@ const ChatItemSchema = new Schema({
     ref: TeamMemberCollectionName,
     required: true
   },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: userCollectionName
+  },
+  chatId: {
+    type: String,
+    require: true
+  },
+  dataId: {
+    type: String,
+    require: true,
+    default: () => getNanoid(22)
+  },
+  appId: {
+    type: Schema.Types.ObjectId,
+    ref: appCollectionName,
+    required: true
+  },
   time: {
     type: Date,
     default: () => new Date()
   },
   obj: {
+    // chat role
     type: String,
     required: true,
     enum: Object.keys(ChatRoleMap)
   },
   value: {
+    // chat content
     type: String,
     default: ''
   },
   userGoodFeedback: {
     type: String
   },
-  userFeedback: String,
   userBadFeedback: {
     type: String
   },
@@ -80,19 +82,24 @@ const ChatItemSchema = new Schema({
 });
 
 try {
-  ChatItemSchema.index({ dataId: -1 });
-  ChatItemSchema.index({ time: -1 });
-  ChatItemSchema.index({ appId: 1 });
-  ChatItemSchema.index({ chatId: 1 });
-  ChatItemSchema.index({ userGoodFeedback: 1 });
-  ChatItemSchema.index({ userBadFeedback: 1 });
-  ChatItemSchema.index({ customFeedbacks: 1 });
-  ChatItemSchema.index({ adminFeedback: 1 });
+  ChatItemSchema.index({ dataId: 1 }, { background: true });
+  /* delete by app; 
+     delete by chat id;
+     get chat list; 
+     get chat logs; 
+     close custom feedback; 
+  */
+  ChatItemSchema.index({ appId: 1, chatId: 1, dataId: 1 }, { background: true });
+  ChatItemSchema.index({ time: -1 }, { background: true });
+  ChatItemSchema.index({ userGoodFeedback: 1 }, { background: true });
+  ChatItemSchema.index({ userBadFeedback: 1 }, { background: true });
+  ChatItemSchema.index({ customFeedbacks: 1 }, { background: true });
+  ChatItemSchema.index({ adminFeedback: 1 }, { background: true });
 } catch (error) {
   console.log(error);
 }
 
 export const MongoChatItem: Model<ChatItemType> =
-  models['chatItem'] || model('chatItem', ChatItemSchema);
+  models[ChatItemCollectionName] || model(ChatItemCollectionName, ChatItemSchema);
 
 MongoChatItem.syncIndexes();

@@ -8,6 +8,7 @@ import { Types } from '@fastgpt/service/common/mongo';
 import { addDays } from 'date-fns';
 import type { GetAppChatLogsParams } from '@/global/core/api/appReq.d';
 import { authApp } from '@fastgpt/service/support/permission/auth/app';
+import { ChatItemCollectionName } from '@fastgpt/service/core/chat/chatItemSchema';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -28,8 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { teamId } = await authApp({ req, authToken: true, appId, per: 'w' });
 
     const where = {
-      appId: new Types.ObjectId(appId),
       teamId: new Types.ObjectId(teamId),
+      appId: new Types.ObjectId(appId),
       updateTime: {
         $gte: new Date(dateStart),
         $lte: new Date(dateEnd)
@@ -40,18 +41,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       MongoChat.aggregate([
         { $match: where },
         {
+          $sort: {
+            userBadFeedbackCount: -1,
+            userGoodFeedbackCount: -1,
+            customFeedbacksCount: -1,
+            updateTime: -1
+          }
+        },
+        { $skip: (pageNum - 1) * pageSize },
+        { $limit: pageSize },
+        {
           $lookup: {
-            from: 'chatitems',
-            let: { chat_id: '$chatId' },
+            from: ChatItemCollectionName,
+            let: { chatId: '$chatId' },
             pipeline: [
               {
                 $match: {
                   $expr: {
                     $and: [
-                      { $eq: ['$chatId', '$$chat_id'] },
-                      { $eq: ['$appId', new Types.ObjectId(appId)] }
+                      { $eq: ['$appId', new Types.ObjectId(appId)] },
+                      { $eq: ['$chatId', '$$chatId'] }
                     ]
                   }
+                }
+              },
+              {
+                $project: {
+                  userGoodFeedback: 1,
+                  userBadFeedback: 1,
+                  customFeedbacks: 1,
+                  adminFeedback: 1
                 }
               }
             ],
@@ -98,16 +117,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
           }
         },
-        {
-          $sort: {
-            userBadFeedbackCount: -1,
-            userGoodFeedbackCount: -1,
-            customFeedbacksCount: -1,
-            updateTime: -1
-          }
-        },
-        { $skip: (pageNum - 1) * pageSize },
-        { $limit: pageSize },
         {
           $project: {
             _id: 1,

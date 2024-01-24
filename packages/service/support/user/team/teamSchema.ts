@@ -24,14 +24,11 @@ const TeamSchema = new Schema({
   },
   balance: {
     type: Number,
-    default: 2 * PRICE_SCALE
+    default: 0
   },
   maxSize: {
     type: Number,
-    default: 5
-  },
-  lastDatasetBillTime: {
-    type: Date
+    default: 3
   },
   limit: {
     lastExportDatasetTime: {
@@ -44,7 +41,7 @@ const TeamSchema = new Schema({
 });
 
 try {
-  TeamSchema.index({ lastDatasetBillTime: -1 });
+  // TeamSchema.index({ createTime: -1 });
 } catch (error) {
   console.log(error);
 }

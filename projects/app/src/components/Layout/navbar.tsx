@@ -30,7 +30,7 @@ const Navbar = ({ unread }: { unread: number }) => {
       {
         label: t('navbar.Chat'),
         icon: 'core/chat/chatLight',
-        activeIcon: 'chatcore/dataset/chatFillFill',
+        activeIcon: 'core/chat/chatFill',
         link: `/chat?appId=${lastChatAppId}&chatId=${lastChatId}`,
         activeLink: ['/chat']
       },
@@ -76,6 +76,12 @@ const Navbar = ({ unread }: { unread: number }) => {
     w: '48px',
     h: '58px',
     borderRadius: 'md'
+  };
+  const hoverStyle: LinkProps = {
+    _hover: {
+      bg: 'myGray.05',
+      color: 'primary.600'
+    }
   };
 
   return (
@@ -146,10 +152,11 @@ const Navbar = ({ unread }: { unread: number }) => {
           <Link
             as={NextLink}
             {...itemStyles}
+            {...hoverStyle}
             prefetch
             href={`/account?currentTab=inform`}
             mb={0}
-            color={'#9096a5'}
+            color={'myGray.500'}
           >
             <Badge count={unread}>
               <MyIcon name={'inform'} width={'22px'} height={'22px'} />
@@ -161,12 +168,13 @@ const Navbar = ({ unread }: { unread: number }) => {
         <MyTooltip label={t('common.system.Use Helper')} placement={'right-end'}>
           <Link
             {...itemStyles}
+            {...hoverStyle}
             href={feConfigs?.docUrl || feConfigs?.chatbotUrl || getDocPath('/docs/intro')}
             target="_blank"
             mb={0}
-            color={'#9096a5'}
+            color={'myGray.500'}
           >
-            <MyIcon name={'common/courseLight'} width={'26px'} height={'26px'} />
+            <MyIcon name={'common/courseLight'} width={'24px'} height={'24px'} />
           </Link>
         </MyTooltip>
       )}
@@ -177,10 +185,11 @@ const Navbar = ({ unread }: { unread: number }) => {
             href="https://github.com/labring/FastGPT"
             target={'_blank'}
             {...itemStyles}
+            {...hoverStyle}
             mt={0}
-            color={'#9096a5'}
+            color={'myGray.500'}
           >
-            <MyIcon name={'common/gitLight'} width={'22px'} height={'22px'} />
+            <MyIcon name={'common/gitInlight'} width={'26px'} height={'26px'} />
           </Link>
         </MyTooltip>
       )}

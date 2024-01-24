@@ -1,10 +1,10 @@
 import {
-  DatasetCollectionTrainingModeEnum,
+  TrainingModeEnum,
   DatasetCollectionTypeEnum,
   DatasetTypeEnum
-} from '@fastgpt/global/core/dataset/constant';
+} from '@fastgpt/global/core/dataset/constants';
 import type { RequestPaging } from '@/types';
-import { TrainingModeEnum } from '@fastgpt/global/core/dataset/constant';
+import { TrainingModeEnum } from '@fastgpt/global/core/dataset/constants';
 import type { SearchTestItemType } from '@/types/core/dataset';
 import { UploadChunkItemType } from '@fastgpt/global/core/dataset/type';
 import { DatasetCollectionSchemaType } from '@fastgpt/global/core/dataset/type';

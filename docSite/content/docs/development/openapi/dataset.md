@@ -15,7 +15,9 @@ weight: 853
 
 ## 创建训练订单
 
-**请求示例**
+{{< tabs tabTotal="2" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
 
 ```bash
 curl --location --request POST 'https://api.fastgpt.in/api/support/wallet/bill/createTrainingBill' \
@@ -26,7 +28,11 @@ curl --location --request POST 'https://api.fastgpt.in/api/support/wallet/bill/c
 }'
 ```
 
-**响应结果**
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
 
 data 为 billId，可用于添加知识库数据时进行账单聚合。
 
@@ -39,7 +45,764 @@ data 为 billId，可用于添加知识库数据时进行账单聚合。
 }
 ```
 
-## 知识库添加数据
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+## 知识库
+
+### 创建一个知识库
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request POST 'http://localhost:3000/api/core/dataset/create' \
+--header 'Authorization: Bearer {{authorization}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "parentId": null,
+    "type": "dataset",
+    "name":"测试",
+    "intro":"介绍",
+    "avatar": "",
+    "vectorModel": "text-embedding-ada-002",
+    "agentModel": "gpt-3.5-turbo-16k"
+}'
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- parentId - 父级ID，用于构建目录结构。通常可以为 null 或者直接不传。
+- type - `dataset`或者`folder`，代表普通知识库和文件夹。不传则代表创建普通知识库。
+- name - 知识库名（必填）
+- intro - 介绍（可选）
+- avatar - 头像地址（可选）
+- vectorModel - 向量模型（建议传空，用系统默认的）
+- agentModel - 文本处理模型（建议传空，用系统默认的）
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+```json
+{
+  "code": 200,
+  "statusText": "",
+  "message": "",
+  "data": "65abc9bd9d1448617cba5e6c"
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 获取知识库列表
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request GET 'http://localhost:3000/api/core/dataset/list?parentId=' \
+--header 'Authorization: Bearer {{authorization}}' \
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- parentId - 父级ID，不传或为空，代表获取根目录下的知识库
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": [
+        {
+            "_id": "65abc9bd9d1448617cba5e6c",
+            "parentId": null,
+            "avatar": "",
+            "name": "测试",
+            "intro": "",
+            "type": "dataset",
+            "permission": "private",
+            "canWrite": true,
+            "isOwner": true,
+            "vectorModel": {
+                "model": "text-embedding-ada-002",
+                "name": "Embedding-2",
+                "inputPrice": 0,
+                "defaultToken": 512,
+                "maxToken": 8000,
+                "weight": 100
+            }
+        }
+    ]
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 获取知识库详情
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request GET 'http://localhost:3000/api/core/dataset/detail?id=6593e137231a2be9c5603ba7' \
+--header 'Authorization: Bearer {{authorization}}' \
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- id: 知识库的ID
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": {
+        "_id": "6593e137231a2be9c5603ba7",
+        "parentId": null,
+        "teamId": "65422be6aa44b7da77729ec8",
+        "tmbId": "65422be6aa44b7da77729ec9",
+        "type": "dataset",
+        "status": "active",
+        "avatar": "/icon/logo.svg",
+        "name": "FastGPT test",
+        "vectorModel": {
+            "model": "text-embedding-ada-002",
+            "name": "Embedding-2",
+            "inputPrice": 0,
+            "defaultToken": 512,
+            "maxToken": 8000,
+            "weight": 100
+        },
+        "agentModel": {
+            "model": "gpt-3.5-turbo-16k",
+            "name": "FastAI-16k",
+            "maxContext": 16000,
+            "maxResponse": 16000,
+            "inputPrice": 0,
+            "outputPrice": 0
+        },
+        "intro": "",
+        "permission": "private",
+        "updateTime": "2024-01-02T10:11:03.084Z",
+        "canWrite": true,
+        "isOwner": true
+    }
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 删除一个知识库
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request DELETE 'http://localhost:3000/api/core/dataset/delete?id=65abc8729d1448617cba5df6' \
+--header 'Authorization: Bearer {{authorization}}' \
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- id: 知识库的ID
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": null
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+
+## 集合
+
+### 创建一个空的集合
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request POST 'http://localhost:3000/api/core/dataset/collection/create' \
+--header 'Authorization: Bearer {{authorization}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "datasetId":"6593e137231a2be9c5603ba7",
+    "parentId": null,
+    "name":"测试",
+    "type":"virtual",
+    "metadata":{
+      "test":111
+    }
+}'
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- datasetId: 知识库的ID(必填)
+- parentId： 父级ID，不填则默认为根目录
+- name: 集合名称（必填）
+- type: 
+  - folder：文件夹
+  - virtual：虚拟集合(手动集合)
+- metadata： 元数据（暂时没啥用）
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+data 为集合的 ID。
+
+```json
+{
+  "code": 200,
+  "statusText": "",
+  "message": "",
+  "data": "65abcd009d1448617cba5ee1"
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+
+### 创建一个纯文本集合
+
+传入一段文字，创建一个集合，会根据传入的文字进行分割。
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request POST 'http://localhost:3000/api/core/dataset/collection/create/text' \
+--header 'Authorization: Bearer {{authorization}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "text":"xxxxxxxx",
+    "datasetId":"6593e137231a2be9c5603ba7",
+    "parentId": null,
+    "name":"测试训练",
+
+    "trainingType": "qa",
+    "chunkSize":8000,
+    "chunkSplitter":"",
+    "qaPrompt":"11",
+
+    "metadata":{}
+}'
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- text: 原文本
+- datasetId: 知识库的ID(必填)
+- parentId： 父级ID，不填则默认为根目录
+- name: 集合名称（必填）
+- metadata： 元数据（暂时没啥用）
+- trainingType:（必填）
+  - chunk: 按文本长度进行分割
+  - qa: QA拆分
+- chunkSize: 每个 chunk 的长度（可选）. chunk模式:100~3000; qa模式: 4000~模型最大token（16k模型通常建议不超过10000）
+- chunkSplitter: 自定义最高优先分割符号（可选）
+- qaPrompt: qa拆分自定义提示词（可选）
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+data 为集合的 ID。
+
+```json
+{
+  "code": 200,
+  "statusText": "",
+  "message": "",
+  "data": {
+      "collectionId": "65abcfab9d1448617cba5f0d",
+      "results": {
+          "insertLen": 5, // 分割成多少段
+          "overToken": [],
+          "repeat": [],
+          "error": []
+      }
+  }
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 创建一个链接集合
+
+传入一个网络链接，创建一个集合，会先去对应网页抓取内容，再抓取的文字进行分割。
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request POST 'http://localhost:3000/api/core/dataset/collection/create/link' \
+--header 'Authorization: Bearer {{authorization}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "link":"https://doc.fastgpt.in/docs/course/quick-start/",
+    "datasetId":"6593e137231a2be9c5603ba7",
+    "parentId": null,
+
+    "trainingType": "chunk",
+    "chunkSize":512,
+    "chunkSplitter":"",
+    "qaPrompt":"",
+
+    "metadata":{
+        "webPageSelector":".docs-content"
+    }
+}'
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- link: 网络链接
+- datasetId: 知识库的ID(必填)
+- parentId： 父级ID，不填则默认为根目录
+- metadata.webPageSelector: 网页选择器，用于指定网页中的哪个元素作为文本(可选)
+- trainingType:（必填）
+  - chunk: 按文本长度进行分割
+  - qa: QA拆分
+- chunkSize: 每个 chunk 的长度（可选）. chunk模式:100~3000; qa模式: 4000~模型最大token（16k模型通常建议不超过10000）
+- chunkSplitter: 自定义最高优先分割符号（可选）
+- qaPrompt: qa拆分自定义提示词（可选）
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+data 为集合的 ID。
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": {
+        "collectionId": "65abd0ad9d1448617cba6031"
+    }
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 创建一个文件集合(商业版)
+
+传入一个文件，创建一个集合，会读取文件内容进行分割。目前支持：pdf, docx, md, txt, html, csv。
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request POST 'http://localhost:3000/api/proApi/core/dataset/collection/create/file' \
+--header 'Authorization: Bearer {{authorization}}' \
+--form 'file=@"C:\\Users\\user\\Desktop\\fastgpt测试文件\\index.html"' \
+--form 'data="{\"datasetId\":\"6593e137231a2be9c5603ba7\",\"parentId\":null,\"trainingType\":\"chunk\",\"chunkSize\":512,\"chunkSplitter\":\"\",\"qaPrompt\":\"\",\"metadata\":{}}"'
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+需要使用 POST form-data 的格式上传。包含 file 和 data 两个字段。
+
+{{% alert icon=" " context="success" %}}
+- file: 文件
+- data: 知识库相关信息（json序列化后传入）
+  - datasetId: 知识库的ID(必填)
+  - parentId： 父级ID，不填则默认为根目录
+  - trainingType:（必填）
+    - chunk: 按文本长度进行分割
+    - qa: QA拆分
+  - chunkSize: 每个 chunk 的长度（可选）. chunk模式:100~3000; qa模式: 4000~模型最大token（16k模型通常建议不超过10000）
+  - chunkSplitter: 自定义最高优先分割符号（可选）
+  - qaPrompt: qa拆分自定义提示词（可选）
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+data 为集合的 ID。
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": {
+        "collectionId": "65abc044e4704bac793fbd81",
+        "results": {
+            "insertLen": 1,
+            "overToken": [],
+            "repeat": [],
+            "error": []
+        }
+    }
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 获取集合列表
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request POST 'http://localhost:3000/api/core/dataset/collection/list' \
+--header 'Authorization: Bearer {{authorization}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "pageNum":1,
+    "pageSize": 10,
+    "datasetId":"6593e137231a2be9c5603ba7",
+    "parentId": null,
+    "searchText":""
+}'
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- pageNum: 页码（选填）
+- pageSize: 每页数量，最大30（选填）
+- datasetId: 知识库的ID(必填)
+- parentId: 父级Id（选填）
+- searchText: 模糊搜索文本（选填）
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "data": [
+            {
+                "_id": "6593e137231a2be9c5603ba9",
+                "parentId": null,
+                "tmbId": "65422be6aa44b7da77729ec9",
+                "type": "virtual",
+                "name": "手动录入",
+                "updateTime": "2099-01-01T00:00:00.000Z",
+                "dataAmount": 3,
+                "trainingAmount": 0,
+                "canWrite": true
+            },
+            {
+                "_id": "65abd0ad9d1448617cba6031",
+                "parentId": null,
+                "tmbId": "65422be6aa44b7da77729ec9",
+                "type": "link",
+                "name": "快速上手 | FastGPT",
+                "rawLink": "https://doc.fastgpt.in/docs/course/quick-start/",
+                "updateTime": "2024-01-20T13:54:53.031Z",
+                "dataAmount": 3,
+                "trainingAmount": 0,
+                "canWrite": true
+            }
+        ],
+        "total": 93
+    }
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 获取集合详情
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request GET 'http://localhost:3000/api/core/dataset/collection/detail?id=65abcfab9d1448617cba5f0d' \
+--header 'Authorization: Bearer {{authorization}}' \
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- id: 集合的ID
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": {
+        "_id": "65abcfab9d1448617cba5f0d",
+        "parentId": null,
+        "teamId": "65422be6aa44b7da77729ec8",
+        "tmbId": "65422be6aa44b7da77729ec9",
+        "datasetId": {
+            "_id": "6593e137231a2be9c5603ba7",
+            "parentId": null,
+            "teamId": "65422be6aa44b7da77729ec8",
+            "tmbId": "65422be6aa44b7da77729ec9",
+            "type": "dataset",
+            "status": "active",
+            "avatar": "/icon/logo.svg",
+            "name": "FastGPT test",
+            "vectorModel": "text-embedding-ada-002",
+            "agentModel": "gpt-3.5-turbo-16k",
+            "intro": "",
+            "permission": "private",
+            "updateTime": "2024-01-02T10:11:03.084Z"
+        },
+        "type": "virtual",
+        "name": "测试训练",
+        "trainingType": "qa",
+        "chunkSize": 8000,
+        "chunkSplitter": "",
+        "qaPrompt": "11",
+        "rawTextLength": 40466,
+        "hashRawText": "47270840614c0cc122b29daaddc09c2a48f0ec6e77093611ab12b69cba7fee12",
+        "createTime": "2024-01-20T13:50:35.838Z",
+        "updateTime": "2024-01-20T13:50:35.838Z",
+        "canWrite": true,
+        "sourceName": "测试训练"
+    }
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 修改集合信息
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request PUT 'http://localhost:3000/api/core/dataset/collection/update' \
+--header 'Authorization: Bearer {{authorization}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "id":"65abcfab9d1448617cba5f0d",
+    "parentId":null,
+    "name":"测2222试"
+}'
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- id: 集合的ID
+- parentId: 修改父级ID（可选）
+- name: 修改集合名称（可选）
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": null
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 删除一个集合
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request DELETE 'http://localhost:3000/api/core/dataset/collection/delete?id=65aa2a64e6cb9b8ccdc00de8' \
+--header 'Authorization: Bearer {{authorization}}' \
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- id: 集合的ID
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": null
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+## 数据
+
+### 为集合批量添加添加数据
+
+注意，每次最多推送 200 组数据。
 
 {{< tabs tabTotal="4" >}}
 {{< tab tabName="请求示例" >}}
@@ -51,7 +814,7 @@ curl --location --request POST 'https://api.fastgpt.in/api/core/dataset/data/pus
 --header 'Content-Type: application/json' \
 --data-raw '{
     "collectionId": "64663f451ba1676dbdef0499",
-    "mode": "chunk",
+    "trainingMode": "chunk",
     "prompt": "可选。qa 拆分引导词，chunk 模式下忽略",
     "billId": "可选。如果有这个值，本次的数据会被聚合到一个订单中，这个值可以重复使用。可以参考 [创建训练订单] 获取该值。",
     "data": [
@@ -63,8 +826,9 @@ curl --location --request POST 'https://api.fastgpt.in/api/core/dataset/data/pus
             "q": "你会什么？",
             "a": "我什么都会",
             "indexes": [{
+                "defaultIndex": false,
                 "type":"custom",
-                "text":"你好"
+                "text":"自定义索引，不使用默认索引"
             }]
         }
     ]
@@ -77,33 +841,17 @@ curl --location --request POST 'https://api.fastgpt.in/api/core/dataset/data/pus
 {{< tab tabName="参数说明" >}}
 {{< markdownify >}}
 
-需要先了解 FastGPT 的多路索引概念：
-
-在 FastGPT 中，你可以为一组数据创建多个索引，如果不指定索引，则系统会自动取对应的 chunk 作为索引。例如前面的请求示例中：
-
-`q：你是谁？a:我是FastGPT助手` 它的`indexes`属性为空，意味着不自定义索引，而是使用默认的索引（你是谁？\n我是FastGPT助手）。
-
-在第二组数据中`q:你会什么？a:我什么都会`指定了一个`你好`的索引，因此这组数据的索引为`你好`。
-
-```json
-{
-    "collectionId": "文件集合的ID，参考上面的第二张图",
-    "mode": "chunk | qa ", //  chunk 模式: 可自定义索引。qa 模型：无法自定义索引，会自动取 data 中的 q 作为数据，让模型自动生成问答对和索引。
-    "prompt": "QA 拆分提示词，需严格按照模板，建议不要传入。",
-    "data": [
-        {
-            "q": "生成索引的内容，index 模式下最大 tokens 为3000，建议不超过 1000",
-            "a": "预期回答/补充",
-            "indexes": "自定义索引",
-        },
-        {
-            "q": "xxx",
-            "a": "xxxx"
-        }
-    ],
-    
-}
-```
+{{% alert icon=" " context="success" %}}
+- collectionId: 集合ID（必填）
+- trainingType:（必填）
+  - chunk: 按文本长度进行分割
+  - qa: QA拆分
+- prompt: 自定义 QA 拆分提示词，需严格按照模板，建议不要传入。（选填）
+- data：（具体数据）
+  - q: 主要数据（必填）
+  - a: 辅助数据（选填）
+  - indexes: 自定义索引（选填），不传入则默认使用q和a构建索引。也可以传入
+{{% /alert %}}
 
 {{< /markdownify >}}
 {{< /tab >}}
@@ -155,6 +903,231 @@ A2:
 {{< /tabs >}}
 
 
+### 获取集合的数据列表
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request POST 'http://localhost:3000/api/core/dataset/data/list' \
+--header 'Authorization: Bearer {{authorization}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "pageNum":1,
+    "pageSize": 10,
+    "collectionId":"65abd4ac9d1448617cba6171",
+    "searchText":""
+}'
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- pageNum: 页码（选填）
+- pageSize: 每页数量，最大30（选填）
+- collectionId: 集合的ID（必填）
+- searchText: 模糊搜索词（选填）
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "data": [
+            {
+                "_id": "65abd4b29d1448617cba61db",
+                "datasetId": "65abc9bd9d1448617cba5e6c",
+                "collectionId": "65abd4ac9d1448617cba6171",
+                "q": "N o . 2 0 2 2 1 2中 国 信 息 通 信 研 究 院京东探索研究院2022年 9月人工智能生成内容（AIGC）白皮书(2022 年)版权声明本白皮书版权属于中国信息通信研究院和京东探索研究院，并受法律保护。转载、摘编或利用其它方式使用本白皮书文字或者观点的，应注明“来源：中国信息通信研究院和京东探索研究院”。违反上述声明者，编者将追究其相关法律责任。前 言习近平总书记曾指出，“数字技术正以新理念、新业态、新模式全面融入人类经济、政治、文化、社会、生态文明建设各领域和全过程”。在当前数字世界和物理世界加速融合的大背景下，人工智能生成内容（Artificial Intelligence Generated Content，简称 AIGC）正在悄然引导着一场深刻的变革，重塑甚至颠覆数字内容的生产方式和消费模式，将极大地丰富人们的数字生活，是未来全面迈向数字文明新时代不可或缺的支撑力量。",
+                "a": "",
+                "chunkIndex": 0
+            },
+            {
+                "_id": "65abd4b39d1448617cba624d",
+                "datasetId": "65abc9bd9d1448617cba5e6c",
+                "collectionId": "65abd4ac9d1448617cba6171",
+                "q": "本白皮书重点从 AIGC 技术、应用和治理等维度进行了阐述。在技术层面，梳理提出了 AIGC 技术体系，既涵盖了对现实世界各种内容的数字化呈现和增强，也包括了基于人工智能的自主内容创作。在应用层面，重点分析了 AIGC 在传媒、电商、影视等行业和场景的应用情况，探讨了以虚拟数字人、写作机器人等为代表的新业态和新应用。在治理层面，从政策监管、技术能力、企业应用等视角，分析了AIGC 所暴露出的版权纠纷、虚假信息传播等各种问题。最后，从政府、行业、企业、社会等层面，给出了 AIGC 发展和治理建议。由于人工智能仍处于飞速发展阶段，我们对 AIGC 的认识还有待进一步深化，白皮书中存在不足之处，敬请大家批评指正。目 录一、 人工智能生成内容的发展历程与概念.............................................................. 1（一）AIGC 历史沿革 .......................................................................................... 1（二）AIGC 的概念与内涵 .................................................................................. 4二、人工智能生成内容的技术体系及其演进方向.................................................... 7（一）AIGC 技术升级步入深化阶段 .................................................................. 7（二）AIGC 大模型架构潜力凸显 .................................................................... 10（三）AIGC 技术演化出三大前沿能力 ............................................................ 18三、人工智能生成内容的应用场景.......................................................................... 26（一）AIGC+传媒：人机协同生产，",
+                "a": "",
+                "chunkIndex": 1
+            }
+        ],
+        "total": 63
+    }
+}
+```
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 获取单条数据详情
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request GET 'http://localhost:3000/api/core/dataset/data/detail?id=65abd4b29d1448617cba61db' \
+--header 'Authorization: Bearer {{authorization}}' \
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- id: 数据的id
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": {
+        "id": "65abd4b29d1448617cba61db",
+        "q": "N o . 2 0 2 2 1 2中 国 信 息 通 信 研 究 院京东探索研究院2022年 9月人工智能生成内容（AIGC）白皮书(2022 年)版权声明本白皮书版权属于中国信息通信研究院和京东探索研究院，并受法律保护。转载、摘编或利用其它方式使用本白皮书文字或者观点的，应注明“来源：中国信息通信研究院和京东探索研究院”。违反上述声明者，编者将追究其相关法律责任。前 言习近平总书记曾指出，“数字技术正以新理念、新业态、新模式全面融入人类经济、政治、文化、社会、生态文明建设各领域和全过程”。在当前数字世界和物理世界加速融合的大背景下，人工智能生成内容（Artificial Intelligence Generated Content，简称 AIGC）正在悄然引导着一场深刻的变革，重塑甚至颠覆数字内容的生产方式和消费模式，将极大地丰富人们的数字生活，是未来全面迈向数字文明新时代不可或缺的支撑力量。",
+        "a": "",
+        "chunkIndex": 0,
+        "indexes": [
+            {
+                "defaultIndex": true,
+                "type": "chunk",
+                "dataId": "3720083",
+                "text": "N o . 2 0 2 2 1 2中 国 信 息 通 信 研 究 院京东探索研究院2022年 9月人工智能生成内容（AIGC）白皮书(2022 年)版权声明本白皮书版权属于中国信息通信研究院和京东探索研究院，并受法律保护。转载、摘编或利用其它方式使用本白皮书文字或者观点的，应注明“来源：中国信息通信研究院和京东探索研究院”。违反上述声明者，编者将追究其相关法律责任。前 言习近平总书记曾指出，“数字技术正以新理念、新业态、新模式全面融入人类经济、政治、文化、社会、生态文明建设各领域和全过程”。在当前数字世界和物理世界加速融合的大背景下，人工智能生成内容（Artificial Intelligence Generated Content，简称 AIGC）正在悄然引导着一场深刻的变革，重塑甚至颠覆数字内容的生产方式和消费模式，将极大地丰富人们的数字生活，是未来全面迈向数字文明新时代不可或缺的支撑力量。",
+                "_id": "65abd4b29d1448617cba61dc"
+            }
+        ],
+        "datasetId": "65abc9bd9d1448617cba5e6c",
+        "collectionId": "65abd4ac9d1448617cba6171",
+        "sourceName": "中文-AIGC白皮书2022.pdf",
+        "sourceId": "65abd4ac9d1448617cba6166",
+        "isOwner": true,
+        "canWrite": true
+    }
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 修改单条数据
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request PUT 'http://localhost:3000/api/core/dataset/data/update' \
+--header 'Authorization: Bearer {{authorization}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "id":"65abd4b29d1448617cba61db",
+    "q":"测试111",
+    "a":"sss",
+    "indexes":[]
+}'
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- id: 数据的id
+- q: 主要数据（选填）
+- a: 辅助数据（选填）
+- indexes: 自定义索引（选填），类型参考`为集合批量添加添加数据`，建议直接不传。更新q,a后，如果有默认索引，则会直接更新默认索引。
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+    "code": 200,
+    "statusText": "",
+    "message": "",
+    "data": null
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 删除单条数据
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="请求示例" >}}
+{{< markdownify >}}
+
+```bash
+curl --location --request DELETE 'http://localhost:3000/api/core/dataset/data/delete?id=65abd4b39d1448617cba624d' \
+--header 'Authorization: Bearer {{authorization}}' \
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="参数说明" >}}
+{{< markdownify >}}
+
+{{% alert icon=" " context="success" %}}
+- id: 数据的id
+{{% /alert %}}
+
+{{< /markdownify >}}
+{{< /tab >}}
+
+{{< tab tabName="响应示例" >}}
+{{< markdownify >}}
+
+
+```json
+{
+  "code": 200,
+  "statusText": "",
+  "message": "",
+  "data": "success"
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
 ## 搜索测试
 
 {{< tabs tabTotal="3" >}}
@@ -181,12 +1154,14 @@ curl --location --request POST 'https://api.fastgpt.in/api/core/dataset/searchTe
 {{< tab tabName="参数说明" >}}
 {{< markdownify >}}
 
+{{% alert icon=" " context="success" %}}
 - datasetId - 知识库ID
 - text - 需要测试的文本
 - limit - 最大 tokens 数量
 - similarity - 最低相关度（0~1，可选）
 - searchMode - 搜索模式：embedding | fullTextRecall | mixedRecall
 - usingReRank - 使用重排
+{{% /alert %}}
 
 {{< /markdownify >}}
 {{< /tab >}}
@@ -196,7 +1171,7 @@ curl --location --request POST 'https://api.fastgpt.in/api/core/dataset/searchTe
 
 返回 top k 结果， limit 为最大 Tokens 数量，最多 20000 tokens。
 
-```bash
+```json
 {
   "code": 200,
   "statusText": "",
@@ -218,5 +1193,5 @@ curl --location --request POST 'https://api.fastgpt.in/api/core/dataset/searchTe
 
 {{< /markdownify >}}
 {{< /tab >}}
-
 {{< /tabs >}}
+

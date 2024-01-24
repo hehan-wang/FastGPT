@@ -60,7 +60,6 @@ export async function saveChat({
         }))
       )
     ];
-    console.log(metadataUpdate);
 
     const title =
       chatContentReplaceBlock(content[0].value).slice(0, 20) ||
@@ -70,7 +69,7 @@ export async function saveChat({
     if (chat) {
       promise.push(
         MongoChat.updateOne(
-          { chatId },
+          { appId, chatId },
           {
             title,
             updateTime: new Date(),

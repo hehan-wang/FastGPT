@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDisclosure, Button, ModalBody, ModalFooter } from '@chakra-ui/react';
 import { useTranslation } from 'next-i18next';
 import MyModal from '@/components/MyModal';
@@ -35,7 +35,7 @@ export const useConfirm = (props?: {
     content,
     showCancel = true
   } = props || {};
-  const [customContent, setCustomContent] = useState(content);
+  const [customContent, setCustomContent] = useState<string | React.ReactNode>(content);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -44,7 +44,7 @@ export const useConfirm = (props?: {
 
   return {
     openConfirm: useCallback(
-      (confirm?: any, cancel?: any, customContent?: string) => {
+      (confirm?: any, cancel?: any, customContent?: string | React.ReactNode) => {
         confirmCb.current = confirm;
         cancelCb.current = cancel;
 
@@ -56,8 +56,8 @@ export const useConfirm = (props?: {
     ),
     ConfirmModal: useCallback(
       ({
-        closeText = t('Cancel'),
-        confirmText = t('Confirm'),
+        closeText = t('common.Close'),
+        confirmText = t('common.Confirm'),
         isLoading,
         bg,
         countDown = 0
@@ -105,7 +105,7 @@ export const useConfirm = (props?: {
               )}
 
               <Button
-                {...(bg && { bg: `${bg} !important` })}
+                bg={bg ? bg : map.bg}
                 isDisabled={countDownAmount > 0}
                 ml={4}
                 isLoading={isLoading}
@@ -120,7 +120,7 @@ export const useConfirm = (props?: {
           </MyModal>
         );
       },
-      [customContent, iconSrc, isOpen, onClose, showCancel, t, title]
+      [customContent, iconSrc, isOpen, map.bg, onClose, showCancel, t, title]
     )
   };
 };

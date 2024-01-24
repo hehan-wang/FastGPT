@@ -8,7 +8,7 @@ import {
   DatasetTypeEnum,
   SearchScoreTypeEnum,
   TrainingModeEnum
-} from './constant';
+} from './constants';
 
 /* schema */
 export type DatasetSchemaType = {
@@ -42,15 +42,21 @@ export type DatasetCollectionSchemaType = {
   type: `${DatasetCollectionTypeEnum}`;
   createTime: Date;
   updateTime: Date;
+
   trainingType: `${TrainingModeEnum}`;
   chunkSize: number;
+  chunkSplitter?: string;
+  qaPrompt?: string;
+
   fileId?: string;
   rawLink?: string;
-  qaPrompt?: string;
+
   rawTextLength?: number;
   hashRawText?: string;
   metadata?: {
     webPageSelector?: string;
+    relatedImgId?: string; // The id of the associated image collections
+
     [key: string]: any;
   };
 };

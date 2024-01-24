@@ -3,13 +3,14 @@ import { jsonRes } from '@fastgpt/service/common/response';
 import { withNextCors } from '@fastgpt/service/common/middle/cors';
 import { connectToDatabase } from '@/service/mongo';
 import { authDatasetData } from '@/service/support/permission/auth/dataset';
-import { delDatasetDataByDataId } from '@fastgpt/service/core/dataset/data/controller';
+import { MongoDatasetData } from '@fastgpt/service/core/dataset/data/schema';
+import { deleteDatasetDataVector } from '@fastgpt/service/common/vectorStore/controller';
 
 export default withNextCors(async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
     await connectToDatabase();
-    const { dataId } = req.query as {
-      dataId: string;
+    const { id: dataId } = req.query as {
+      id: string;
     };
 
     if (!dataId) {
@@ -17,9 +18,27 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     }
 
     // 凭证校验
-    await authDatasetData({ req, authToken: true, dataId, per: 'w' });
+    const { teamId, datasetData } = await authDatasetData({
+      req,
+      authToken: true,
+      authApiKey: true,
+      dataId,
+      per: 'w'
+    });
 
-    await delDatasetDataByDataId(dataId);
+    // update mongo data update time
+    await MongoDatasetData.findByIdAndUpdate(dataId, {
+      updateTime: new Date()
+    });
+
+    // delete vector data
+    await deleteDatasetDataVector({
+      teamId,
+      idList: datasetData.indexes.map((item) => item.dataId)
+    });
+
+    // delete mongo data
+    await MongoDatasetData.findByIdAndDelete(dataId);
 
     jsonRes(res, {
       data: 'success'

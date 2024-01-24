@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { customAlphabet } from 'nanoid';
 
 /* check string is a web link */
 export function strIsLink(str?: string) {
@@ -36,3 +37,13 @@ export function replaceVariable(text: string, obj: Record<string, string | numbe
   }
   return text || '';
 }
+
+/* replace sensitive link */
+export const replaceSensitiveLink = (text: string) => {
+  const urlRegex = /(?<=https?:\/\/)[^\s]+/g;
+  return text.replace(urlRegex, 'xxx');
+};
+
+export const getNanoid = (size = 12) => {
+  return customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890', size)();
+};

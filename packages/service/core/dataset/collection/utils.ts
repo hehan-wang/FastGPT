@@ -4,16 +4,32 @@ import type { ParentTreePathItemType } from '@fastgpt/global/common/parentFolder
 import { splitText2Chunks } from '@fastgpt/global/common/string/textSplitter';
 import { MongoDatasetTraining } from '../training/schema';
 import { urlsFetch } from '../../../common/string/cheerio';
-import { DatasetCollectionTypeEnum } from '@fastgpt/global/core/dataset/constant';
+import {
+  DatasetCollectionTypeEnum,
+  TrainingModeEnum
+} from '@fastgpt/global/core/dataset/constants';
 import { hashStr } from '@fastgpt/global/common/string/tools';
 
 /**
  * get all collection by top collectionId
  */
-export async function findCollectionAndChild(id: string, fields = '_id parentId name metadata') {
+export async function findCollectionAndChild({
+  teamId,
+  datasetId,
+  collectionId,
+  fields = '_id parentId name metadata'
+}: {
+  teamId: string;
+  datasetId: string;
+  collectionId: string;
+  fields?: string;
+}) {
   async function find(id: string) {
     // find children
-    const children = await MongoDatasetCollection.find({ parentId: id }, fields);
+    const children = await MongoDatasetCollection.find(
+      { teamId, datasetId, parentId: id },
+      fields
+    ).lean();
 
     let collections = children;
 
@@ -25,8 +41,8 @@ export async function findCollectionAndChild(id: string, fields = '_id parentId 
     return collections;
   }
   const [collection, childCollections] = await Promise.all([
-    MongoDatasetCollection.findById(id, fields),
-    find(id)
+    MongoDatasetCollection.findById(collectionId, fields),
+    find(collectionId)
   ]);
 
   if (!collection) {
@@ -92,8 +108,12 @@ export const getCollectionAndRawText = async ({
     return Promise.reject('Collection not found');
   }
 
-  const rawText = await (async () => {
-    if (newRawText) return newRawText;
+  const { title, rawText } = await (async () => {
+    if (newRawText)
+      return {
+        title: '',
+        rawText: newRawText
+      };
     // link
     if (col.type === DatasetCollectionTypeEnum.link && col.rawLink) {
       // crawl new data
@@ -102,19 +122,26 @@ export const getCollectionAndRawText = async ({
         selector: col.datasetId?.websiteConfig?.selector || col?.metadata?.webPageSelector
       });
 
-      return result[0].content;
+      return {
+        title: result[0]?.title,
+        rawText: result[0]?.content
+      };
     }
 
     // file
 
-    return '';
+    return {
+      title: '',
+      rawText: ''
+    };
   })();
 
   const hashRawText = hashStr(rawText);
-  const isSameRawText = col.hashRawText === hashRawText;
+  const isSameRawText = rawText && col.hashRawText === hashRawText;
 
   return {
     collection: col,
+    title,
     rawText,
     isSameRawText
   };
@@ -135,6 +162,7 @@ export const reloadCollectionChunks = async ({
   rawText?: string;
 }) => {
   const {
+    title,
     rawText: newRawText,
     collection: col,
     isSameRawText
@@ -149,11 +177,15 @@ export const reloadCollectionChunks = async ({
   // split data
   const { chunks } = splitText2Chunks({
     text: newRawText,
-    chunkLen: col.chunkSize || 512,
-    countTokens: false
+    chunkLen: col.chunkSize || 512
   });
 
   // insert to training queue
+  const model = await (() => {
+    if (col.trainingType === TrainingModeEnum.chunk) return col.datasetId.vectorModel;
+    if (col.trainingType === TrainingModeEnum.qa) return col.datasetId.agentModel;
+    return Promise.reject('Training model error');
+  })();
   await MongoDatasetTraining.insertMany(
     chunks.map((item, i) => ({
       teamId: col.teamId,
@@ -163,7 +195,7 @@ export const reloadCollectionChunks = async ({
       billId,
       mode: col.trainingType,
       prompt: '',
-      model: col.datasetId.vectorModel,
+      model,
       q: item,
       a: '',
       chunkIndex: i
@@ -172,6 +204,7 @@ export const reloadCollectionChunks = async ({
 
   // update raw text
   await MongoDatasetCollection.findByIdAndUpdate(col._id, {
+    ...(title && { name: title }),
     rawTextLength: newRawText.length,
     hashRawText: hashStr(newRawText)
   });
