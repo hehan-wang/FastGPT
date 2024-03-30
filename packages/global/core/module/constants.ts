@@ -1,4 +1,4 @@
-export enum ModuleTemplateTypeEnum {
+export enum FlowNodeTemplateTypeEnum {
   userGuide = 'userGuide',
   systemInput = 'systemInput',
   tools = 'tools',
@@ -21,7 +21,10 @@ export enum ModuleIOValueTypeEnum {
 
   // plugin special type
   selectApp = 'selectApp',
-  selectDataset = 'selectDataset'
+  selectDataset = 'selectDataset',
+
+  // tool
+  tools = 'tools'
 }
 
 /* reg: modulename key */
@@ -61,10 +64,12 @@ export enum ModuleInputKeyEnum {
   // dataset
   datasetSelectList = 'datasets',
   datasetSimilarity = 'similarity',
-  datasetLimit = 'limit',
+  datasetMaxTokens = 'limit',
   datasetSearchMode = 'searchMode',
   datasetSearchUsingReRank = 'usingReRank',
-  datasetParamsModal = 'datasetParamsModal',
+  datasetSearchUsingExtensionQuery = 'datasetSearchUsingExtensionQuery',
+  datasetSearchExtensionModel = 'datasetSearchExtensionModel',
+  datasetSearchExtensionBg = 'datasetSearchExtensionBg',
 
   // context extract
   contextExtractInput = 'content',
@@ -72,24 +77,26 @@ export enum ModuleInputKeyEnum {
 
   // http
   httpReqUrl = 'system_httpReqUrl',
-  httpHeader = 'system_httpHeader',
+  httpHeaders = 'system_httpHeader',
   httpMethod = 'system_httpMethod',
+  httpParams = 'system_httpParams',
+  httpJsonBody = 'system_httpJsonBody',
   abandon_httpUrl = 'url',
 
   // app
   runAppSelectApp = 'app',
 
   // plugin
-  pluginId = 'pluginId'
+  pluginId = 'pluginId',
+  pluginStart = 'pluginStart'
 }
 
 export enum ModuleOutputKeyEnum {
   // common
   userChatInput = 'userChatInput',
   finish = 'finish',
-  responseData = 'responseData',
   history = 'history',
-  answerText = 'answerText', //  answer module text key
+  answerText = 'answerText', // module answer. the value will be show and save to history
   success = 'success',
   failed = 'failed',
   text = 'system_text',
@@ -105,23 +112,44 @@ export enum ModuleOutputKeyEnum {
 
   // tf switch
   resultTrue = 'system_resultTrue',
-  resultFalse = 'system_resultFalse'
+  resultFalse = 'system_resultFalse',
+
+  // tools
+  selectedTools = 'selectedTools',
+
+  // http
+  httpRawResponse = 'httpRawResponse',
+
+  // plugin
+  pluginStart = 'pluginStart'
 }
 
 export enum VariableInputEnum {
   input = 'input',
   textarea = 'textarea',
-  select = 'select'
+  select = 'select',
+  external = 'external'
 }
 export const variableMap = {
   [VariableInputEnum.input]: {
-    icon: 'core/app/variable/input'
+    icon: 'core/app/variable/input',
+    title: 'core.module.variable.input type',
+    desc: ''
   },
   [VariableInputEnum.textarea]: {
-    icon: 'core/app/variable/textarea'
+    icon: 'core/app/variable/textarea',
+    title: 'core.module.variable.textarea type',
+    desc: '允许用户最多输入4000字的对话框。'
   },
   [VariableInputEnum.select]: {
-    icon: 'core/app/variable/select'
+    icon: 'core/app/variable/select',
+    title: 'core.module.variable.select type',
+    desc: ''
+  },
+  [VariableInputEnum.external]: {
+    icon: 'core/app/variable/external',
+    title: 'core.module.variable.External type',
+    desc: '可以通过API接口或分享链接的Query传递变量。增加该类型变量的主要目的是用于变量提示。使用例子: 你可以通过分享链接Query中拼接Token，来实现内部系统身份鉴权。'
   }
 };
 

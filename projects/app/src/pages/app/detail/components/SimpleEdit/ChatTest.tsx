@@ -3,7 +3,8 @@ import { useUserStore } from '@/web/support/user/useUserStore';
 import { Box, Flex, IconButton } from '@chakra-ui/react';
 import { useTranslation } from 'next-i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import ChatBox, { type ComponentRef, type StartChatFnProps } from '@/components/ChatBox';
+import ChatBox from '@/components/ChatBox';
+import type { ComponentRef, StartChatFnProps } from '@/components/ChatBox/type.d';
 import { ModuleItemType } from '@fastgpt/global/core/module/type';
 import { ModuleInputKeyEnum } from '@fastgpt/global/core/module/constants';
 import { streamFetch } from '@/web/common/api/fetch';
@@ -49,7 +50,7 @@ const ChatTest = ({ appId }: { appId: string }) => {
           appName: `调试-${appDetail.name}`
         },
         onMessage: generatingMessage,
-        abortSignal: controller
+        abortCtrl: controller
       });
 
       return { responseText, responseData };

@@ -12,13 +12,13 @@ import {
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { AppSchema } from '@fastgpt/global/core/app/type.d';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import { useSelectFile } from '@/web/common/file/hooks/useSelectFile';
 import { compressImgFileAndUpload } from '@/web/common/file/controller';
 import { getErrText } from '@fastgpt/global/common/error/utils';
-import { useRequest } from '@/web/common/hooks/useRequest';
+import { useRequest } from '@fastgpt/web/hooks/useRequest';
 import Avatar from '@/components/Avatar';
-import MyModal from '@/components/MyModal';
+import MyModal from '@fastgpt/web/components/common/MyModal';
 import { useAppStore } from '@/web/core/app/store/useAppStore';
 import PermissionRadio from '@/components/support/permission/Radio';
 import { useTranslation } from 'next-i18next';

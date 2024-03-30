@@ -2,21 +2,26 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { jsonRes } from '@fastgpt/service/common/response';
 import { authCert } from '@fastgpt/service/support/permission/auth/common';
 import { withNextCors } from '@fastgpt/service/common/middle/cors';
-import { pushGenerateVectorBill } from '@/service/support/wallet/bill/push';
+import { pushGenerateVectorUsage } from '@/service/support/wallet/usage/push';
 import { connectToDatabase } from '@/service/mongo';
-import { authTeamBalance } from '@/service/support/permission/auth/bill';
-import { getVectorsByText, GetVectorProps } from '@fastgpt/service/core/ai/embedding';
+import { getVectorsByText } from '@fastgpt/service/core/ai/embedding';
 import { updateApiKeyUsage } from '@fastgpt/service/support/openapi/tools';
-import { getBillSourceByAuthType } from '@fastgpt/global/support/wallet/bill/tools';
+import { getUsageSourceByAuthType } from '@fastgpt/global/support/wallet/usage/tools';
+import { getVectorModel } from '@fastgpt/service/core/ai/model';
+import { checkTeamAIPoints } from '@fastgpt/service/support/permission/teamLimit';
+import { EmbeddingTypeEnm } from '@fastgpt/global/core/ai/constants';
 
-type Props = GetVectorProps & {
+type Props = {
   input: string | string[];
+  model: string;
+  dimensions?: number;
   billId?: string;
+  type: `${EmbeddingTypeEnm}`;
 };
 
 export default withNextCors(async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
-    let { input, model, billId } = req.body as Props;
+    let { input, model, billId, type } = req.body as Props;
     await connectToDatabase();
 
     if (!Array.isArray(input) && typeof input !== 'string') {
@@ -31,9 +36,13 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       authApiKey: true
     });
 
-    await authTeamBalance(teamId);
+    await checkTeamAIPoints(teamId);
 
-    const { charsLength, vectors } = await getVectorsByText({ input: query, model });
+    const { tokens, vectors } = await getVectorsByText({
+      input: query,
+      model: getVectorModel(model),
+      type
+    });
 
     res.json({
       object: 'list',
@@ -44,24 +53,24 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       })),
       model,
       usage: {
-        prompt_tokens: charsLength,
-        total_tokens: charsLength
+        prompt_tokens: tokens,
+        total_tokens: tokens
       }
     });
 
-    const { total } = pushGenerateVectorBill({
+    const { totalPoints } = pushGenerateVectorUsage({
       teamId,
       tmbId,
-      charsLength,
+      tokens,
       model,
       billId,
-      source: getBillSourceByAuthType({ authType })
+      source: getUsageSourceByAuthType({ authType })
     });
 
     if (apikey) {
       updateApiKeyUsage({
         apikey,
-        usage: total
+        totalPoints: totalPoints
       });
     }
   } catch (err) {

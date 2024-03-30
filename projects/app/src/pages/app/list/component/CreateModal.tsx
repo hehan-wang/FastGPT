@@ -8,22 +8,25 @@ import {
   Input,
   Grid,
   useTheme,
-  Card
+  Card,
+  Text,
+  HStack,
+  Tag
 } from '@chakra-ui/react';
+import { AddIcon } from '@chakra-ui/icons';
 import { useSelectFile } from '@/web/common/file/hooks/useSelectFile';
 import { useForm } from 'react-hook-form';
 import { compressImgFileAndUpload } from '@/web/common/file/controller';
 import { getErrText } from '@fastgpt/global/common/error/utils';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import { postCreateApp } from '@/web/core/app/api';
 import { useRouter } from 'next/router';
 import { appTemplates } from '@/web/core/app/templates';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import { useRequest } from '@/web/common/hooks/useRequest';
-import { feConfigs } from '@/web/common/system/staticData';
+import { useRequest } from '@fastgpt/web/hooks/useRequest';
 import Avatar from '@/components/Avatar';
 import MyTooltip from '@/components/MyTooltip';
-import MyModal from '@/components/MyModal';
+import MyModal from '@fastgpt/web/components/common/MyModal';
 import { useTranslation } from 'next-i18next';
 import { MongoImageTypeEnum } from '@fastgpt/global/common/file/image/constants';
 
@@ -39,7 +42,7 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const { toast } = useToast();
   const router = useRouter();
   const theme = useTheme();
-  const { isPc } = useSystemStore();
+  const { isPc, feConfigs } = useSystemStore();
   const { register, setValue, getValues, handleSubmit } = useForm<FormType>({
     defaultValues: {
       avatar: '/icon/logo.svg',

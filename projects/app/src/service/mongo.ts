@@ -1,5 +1,4 @@
-import { startQueue } from './utils/tools';
-import { PRICE_SCALE } from '@fastgpt/global/support/wallet/bill/constants';
+import { PRICE_SCALE } from '@fastgpt/global/support/wallet/constants';
 import { MongoUser } from '@fastgpt/service/support/user/schema';
 import { connectMongo } from '@fastgpt/service/common/mongo/init';
 import { hashStr } from '@fastgpt/global/common/string/tools';
@@ -8,29 +7,36 @@ import { exit } from 'process';
 import { initVectorStore } from '@fastgpt/service/common/vectorStore/controller';
 import { getInitConfig } from '@/pages/api/common/system/getInitData';
 import { startCron } from './common/system/cron';
+import { mongoSessionRun } from '@fastgpt/service/common/mongo/sessionRun';
+import { initGlobal } from './common/system';
+import { startMongoWatch } from './common/system/volumnMongoWatch';
+import { startTrainingQueue } from './core/dataset/training/utils';
 
 /**
  * connect MongoDB and init data
  */
 export function connectToDatabase(): Promise<void> {
   return connectMongo({
-    beforeHook: () => {},
+    beforeHook: () => {
+      initGlobal();
+    },
     afterHook: async () => {
-      initVectorStore();
-      // start queue
-      startQueue();
       // init system config
       getInitConfig();
+      //init vector database, init root user
+      await Promise.all([initVectorStore(), initRootUser()]);
 
+      startMongoWatch();
       // cron
       startCron();
 
-      initRootUser();
+      // start queue
+      startTrainingQueue(true);
     }
   });
 }
 
-async function initRootUser() {
+async function initRootUser(retry = 3): Promise<any> {
   try {
     const rootUser = await MongoUser.findOne({
       username: 'root'
@@ -39,30 +45,39 @@ async function initRootUser() {
 
     let rootId = rootUser?._id || '';
 
-    // init root user
-    if (rootUser) {
-      await MongoUser.findOneAndUpdate(
-        { username: 'root' },
-        {
+    await mongoSessionRun(async (session) => {
+      // init root user
+      if (rootUser) {
+        await rootUser.updateOne({
           password: hashStr(psw)
-        }
-      );
-    } else {
-      const { _id } = await MongoUser.create({
-        username: 'root',
-        password: hashStr(psw)
-      });
-      rootId = _id;
-    }
-    // init root team
-    await createDefaultTeam({ userId: rootId, maxSize: 1, balance: 9999 * PRICE_SCALE });
+        });
+      } else {
+        const [{ _id }] = await MongoUser.create(
+          [
+            {
+              username: 'root',
+              password: hashStr(psw)
+            }
+          ],
+          { session }
+        );
+        rootId = _id;
+      }
+      // init root team
+      await createDefaultTeam({ userId: rootId, balance: 9999 * PRICE_SCALE, session });
+    });
 
     console.log(`root user init:`, {
       username: 'root',
       password: psw
     });
   } catch (error) {
-    console.log('init root user error', error);
-    exit(1);
+    if (retry > 0) {
+      console.log('retry init root user');
+      return initRootUser(retry - 1);
+    } else {
+      console.error('init root user error', error);
+      exit(1);
+    }
   }
 }

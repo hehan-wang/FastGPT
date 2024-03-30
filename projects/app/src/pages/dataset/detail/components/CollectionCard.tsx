@@ -26,15 +26,14 @@ import {
 } from '@/web/core/dataset/api';
 import { useQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash';
-import { useConfirm } from '@/web/common/hooks/useConfirm';
+import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 import { useTranslation } from 'next-i18next';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import MyInput from '@/components/MyInput';
 import dayjs from 'dayjs';
-import { useRequest } from '@/web/common/hooks/useRequest';
-import { useLoading } from '@/web/common/hooks/useLoading';
+import { useRequest } from '@fastgpt/web/hooks/useRequest';
+import { useLoading } from '@fastgpt/web/hooks/useLoading';
 import { useRouter } from 'next/router';
-import { usePagination } from '@/web/common/hooks/usePagination';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import MyMenu from '@/components/MyMenu';
 import { useEditTitle } from '@/web/common/hooks/useEditTitle';
@@ -55,7 +54,7 @@ import ParentPath from '@/components/common/ParentPaths';
 import dynamic from 'next/dynamic';
 import { useDrag } from '@/web/common/hooks/useDrag';
 import SelectCollections from '@/web/core/dataset/components/SelectCollections';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import MyTooltip from '@/components/MyTooltip';
 import { useUserStore } from '@/web/support/user/useUserStore';
 import { TeamMemberRoleEnum } from '@fastgpt/global/support/user/team/constant';
@@ -64,6 +63,7 @@ import { DatasetSchemaType } from '@fastgpt/global/core/dataset/type';
 import { DatasetCollectionSyncResultEnum } from '@fastgpt/global/core/dataset/constants';
 import MyBox from '@/components/common/MyBox';
 import { ImportDataSourceEnum } from './Import';
+import { usePagination } from '@fastgpt/web/hooks/usePagination';
 
 const WebSiteConfigModal = dynamic(() => import('./Import/WebsiteConfig'), {});
 const FileSourceSelector = dynamic(() => import('./Import/sourceSelector/FileSourceSelector'), {});
@@ -381,8 +381,7 @@ const CollectionCard = () => {
             <>
               {userInfo?.team?.role !== TeamMemberRoleEnum.visitor && (
                 <MyMenu
-                  offset={[-0, 10]}
-                  width={120}
+                  offset={[0, 5]}
                   Button={
                     <MenuButton
                       _hover={{
@@ -408,7 +407,7 @@ const CollectionCard = () => {
                   }
                   menuList={[
                     {
-                      child: (
+                      label: (
                         <Flex>
                           <MyIcon name={'common/folderFill'} w={'20px'} mr={2} />
                           {t('Folder')}
@@ -417,7 +416,7 @@ const CollectionCard = () => {
                       onClick: () => setEditFolderData({})
                     },
                     {
-                      child: (
+                      label: (
                         <Flex>
                           <MyIcon name={'core/dataset/manualCollection'} mr={2} w={'20px'} />
                           {t('core.dataset.Manual collection')}
@@ -433,7 +432,7 @@ const CollectionCard = () => {
                       }
                     },
                     {
-                      child: (
+                      label: (
                         <Flex>
                           <MyIcon name={'core/dataset/fileCollection'} mr={2} w={'20px'} />
                           {t('core.dataset.Text collection')}
@@ -442,7 +441,7 @@ const CollectionCard = () => {
                       onClick: onOpenFileSourceSelector
                     },
                     {
-                      child: (
+                      label: (
                         <Flex>
                           <MyIcon name={'core/dataset/tableCollection'} mr={2} w={'20px'} />
                           {t('core.dataset.Table collection')}
@@ -627,6 +626,7 @@ const CollectionCard = () => {
                     {collection.canWrite && userInfo?.team?.role !== TeamMemberRoleEnum.visitor && (
                       <MyMenu
                         width={100}
+                        offset={[-70, 5]}
                         Button={
                           <MenuButton
                             w={'22px'}
@@ -655,7 +655,7 @@ const CollectionCard = () => {
                           ...(collection.type === DatasetCollectionTypeEnum.link
                             ? [
                                 {
-                                  child: (
+                                  label: (
                                     <Flex alignItems={'center'}>
                                       <MyIcon name={'common/refreshLight'} w={'14px'} mr={2} />
                                       {t('core.dataset.collection.Sync')}
@@ -669,7 +669,7 @@ const CollectionCard = () => {
                               ]
                             : []),
                           {
-                            child: (
+                            label: (
                               <Flex alignItems={'center'}>
                                 <MyIcon name={'common/file/move'} w={'14px'} mr={2} />
                                 {t('Move')}
@@ -678,7 +678,7 @@ const CollectionCard = () => {
                             onClick: () => setMoveCollectionData({ collectionId: collection._id })
                           },
                           {
-                            child: (
+                            label: (
                               <Flex alignItems={'center'}>
                                 <MyIcon name={'edit'} w={'14px'} mr={2} />
                                 {t('Rename')}
@@ -696,7 +696,7 @@ const CollectionCard = () => {
                               })
                           },
                           {
-                            child: (
+                            label: (
                               <Flex alignItems={'center'}>
                                 <MyIcon
                                   mr={1}
@@ -707,6 +707,7 @@ const CollectionCard = () => {
                                 <Box>{t('common.Delete')}</Box>
                               </Flex>
                             ),
+                            type: 'danger',
                             onClick: () =>
                               openDeleteConfirm(
                                 () => {

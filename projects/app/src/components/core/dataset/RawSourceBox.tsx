@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Box, BoxProps, Image } from '@chakra-ui/react';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import MyTooltip from '@/components/MyTooltip';
 import { useTranslation } from 'next-i18next';
@@ -30,7 +30,8 @@ const RawSourceBox = ({ sourceId, sourceName = '', canView = true, ...props }: P
       shouldWrapChildren={false}
     >
       <Box
-        color={'myGray.600'}
+        color={'myGray.900'}
+        fontWeight={'medium'}
         display={'inline-flex'}
         whiteSpace={'nowrap'}
         {...(canPreview

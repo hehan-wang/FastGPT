@@ -4,12 +4,16 @@ import { withNextCors } from '@fastgpt/service/common/middle/cors';
 import type { SearchTestProps, SearchTestResponse } from '@/global/core/dataset/api.d';
 import { connectToDatabase } from '@/service/mongo';
 import { authDataset } from '@fastgpt/service/support/permission/auth/dataset';
-import { authTeamBalance } from '@/service/support/permission/auth/bill';
-import { pushGenerateVectorBill } from '@/service/support/wallet/bill/push';
-import { searchDatasetData } from '@/service/core/dataset/data/controller';
+import { pushGenerateVectorUsage } from '@/service/support/wallet/usage/push';
+import { searchDatasetData } from '@fastgpt/service/core/dataset/search/controller';
 import { updateApiKeyUsage } from '@fastgpt/service/support/openapi/tools';
-import { BillSourceEnum } from '@fastgpt/global/support/wallet/bill/constants';
-import { searchQueryExtension } from '@fastgpt/service/core/ai/functions/queryExtension';
+import { UsageSourceEnum } from '@fastgpt/global/support/wallet/usage/constants';
+import { getLLMModel } from '@fastgpt/service/core/ai/model';
+import { datasetSearchQueryExtension } from '@fastgpt/service/core/dataset/search/utils';
+import {
+  checkTeamAIPoints,
+  checkTeamReRankPermission
+} from '@fastgpt/service/support/permission/teamLimit';
 
 export default withNextCors(async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
@@ -20,13 +24,16 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       limit = 1500,
       similarity,
       searchMode,
-      usingReRank
+      usingReRank,
+
+      datasetSearchUsingExtensionQuery = false,
+      datasetSearchExtensionModel,
+      datasetSearchExtensionBg = ''
     } = req.body as SearchTestProps;
 
     if (!datasetId || !text) {
       throw new Error('缺少参数');
     }
-
     const start = Date.now();
 
     // auth dataset role
@@ -37,40 +44,50 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       datasetId,
       per: 'r'
     });
-
     // auth balance
-    await authTeamBalance(teamId);
+    await checkTeamAIPoints(teamId);
 
     // query extension
-    // const { queries } = await searchQueryExtension({
-    //   query: text,
-    //   model: global.chatModels[0].model
-    // });
+    const extensionModel =
+      datasetSearchUsingExtensionQuery && datasetSearchExtensionModel
+        ? getLLMModel(datasetSearchExtensionModel)
+        : undefined;
+    const { concatQueries, rewriteQuery, aiExtensionResult } = await datasetSearchQueryExtension({
+      query: text,
+      extensionModel,
+      extensionBg: datasetSearchExtensionBg
+    });
 
-    const { searchRes, charsLength, ...result } = await searchDatasetData({
+    const { searchRes, tokens, ...result } = await searchDatasetData({
       teamId,
-      rawQuery: text,
-      queries: [text],
+      reRankQuery: rewriteQuery,
+      queries: concatQueries,
       model: dataset.vectorModel,
       limit: Math.min(limit, 20000),
       similarity,
       datasetIds: [datasetId],
       searchMode,
-      usingReRank
+      usingReRank: usingReRank && (await checkTeamReRankPermission(teamId))
     });
 
     // push bill
-    const { total } = pushGenerateVectorBill({
+    const { totalPoints } = pushGenerateVectorUsage({
       teamId,
       tmbId,
-      charsLength,
+      tokens,
       model: dataset.vectorModel,
-      source: apikey ? BillSourceEnum.api : BillSourceEnum.fastgpt
+      source: apikey ? UsageSourceEnum.api : UsageSourceEnum.fastgpt,
+
+      ...(aiExtensionResult &&
+        extensionModel && {
+          extensionModel: extensionModel.name,
+          extensionTokens: aiExtensionResult.tokens
+        })
     });
     if (apikey) {
       updateApiKeyUsage({
         apikey,
-        usage: total
+        totalPoints: totalPoints
       });
     }
 
@@ -78,6 +95,7 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       data: {
         list: searchRes,
         duration: `${((Date.now() - start) / 1000).toFixed(3)}s`,
+        usingQueryExtension: !!aiExtensionResult,
         ...result
       }
     });

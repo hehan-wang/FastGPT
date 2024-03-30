@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { POST } from '../api/request';
-import { useToast } from './useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import { useTranslation } from 'next-i18next';
 import { getErrText } from '@fastgpt/global/common/error/utils';
+import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
 
-export const useSpeech = (props?: { shareId?: string }) => {
-  const { shareId } = props || {};
+export const useSpeech = (props?: OutLinkChatAuthProps) => {
   const { t } = useTranslation();
   const mediaRecorder = useRef<MediaRecorder>();
-  // const mediaStream = useRef<MediaStream>();
   const [mediaStream, setMediaStream] = useState<MediaStream>();
   const { toast } = useToast();
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -54,6 +53,7 @@ export const useSpeech = (props?: { shareId?: string }) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setMediaStream(stream);
+
       mediaRecorder.current = new MediaRecorder(stream);
       const chunks: Blob[] = [];
       setIsSpeaking(true);
@@ -74,12 +74,25 @@ export const useSpeech = (props?: { shareId?: string }) => {
 
       mediaRecorder.current.onstop = async () => {
         const formData = new FormData();
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-
+        let options = {};
+        if (MediaRecorder.isTypeSupported('audio/webm')) {
+          options = { type: 'audio/webm' };
+        } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+          options = { type: 'video/mp4' };
+        } else {
+          console.error('no suitable mimetype found for this device');
+        }
+        const blob = new Blob(chunks, options);
         const duration = Math.round((Date.now() - startTimestamp.current) / 1000);
 
-        formData.append('files', blob, 'recording.webm');
-        formData.append('metadata', JSON.stringify({ duration, shareId }));
+        formData.append('file', blob, 'recording.mp4');
+        formData.append(
+          'data',
+          JSON.stringify({
+            ...props,
+            duration
+          })
+        );
 
         setIsTransCription(true);
         try {
@@ -106,7 +119,13 @@ export const useSpeech = (props?: { shareId?: string }) => {
       };
 
       mediaRecorder.current.start();
-    } catch (error) {}
+    } catch (error) {
+      toast({
+        status: 'warning',
+        title: getErrText(error, 'Whisper error')
+      });
+      console.log(error);
+    }
   };
 
   const stopSpeak = () => {

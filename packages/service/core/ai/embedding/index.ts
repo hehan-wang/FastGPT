@@ -1,15 +1,16 @@
+import { VectorModelItemType } from '@fastgpt/global/core/ai/model.d';
 import { getAIApi } from '../config';
+import { countPromptTokens } from '@fastgpt/global/common/string/tiktoken';
+import { EmbeddingTypeEnm } from '@fastgpt/global/core/ai/constants';
 
-export type GetVectorProps = {
-  model: string;
+type GetVectorProps = {
+  model: VectorModelItemType;
   input: string;
+  type?: `${EmbeddingTypeEnm}`;
 };
 
 // text to vector
-export async function getVectorsByText({
-  model = 'text-embedding-ada-002',
-  input
-}: GetVectorProps) {
+export async function getVectorsByText({ model, input, type }: GetVectorProps) {
   if (!input) {
     return Promise.reject({
       code: 500,
@@ -23,7 +24,10 @@ export async function getVectorsByText({
     // input text to vector
     const result = await ai.embeddings
       .create({
-        model,
+        ...model.defaultConfig,
+        ...(type === EmbeddingTypeEnm.db && model.dbConfig),
+        ...(type === EmbeddingTypeEnm.query && model.queryConfig),
+        model: model.model,
         input: [input]
       })
       .then(async (res) => {
@@ -37,7 +41,7 @@ export async function getVectorsByText({
         }
 
         return {
-          charsLength: input.length,
+          tokens: countPromptTokens(input),
           vectors: await Promise.all(res.data.map((item) => unityDimensional(item.embedding)))
         };
       });

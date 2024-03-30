@@ -1,5 +1,5 @@
 ---
-title: "新 HTTP 模块"
+title: "HTTP 模块"
 description: "FastGPT HTTP 模块介绍"
 icon: "http"
 draft: false
@@ -19,176 +19,179 @@ weight: 355
 
 ## 介绍
 
-HTTP 模块会向对应的地址发送一个 `POST/GET` 请求，携带部分`系统参数`及`自定义参数`，并接收一个 JSON 响应值，字段也是自定义。
+HTTP 模块会向对应的地址发送一个 `HTTP` 请求，实际操作与 Postman 和 ApiFox 这类直流工具使用差不多。
 
-- 你还可以通过 JSON 传入自定义的请求头。
-- POST 请求中，数据会被放置在 `body` 中。
-- GET 请求中，数据会被放置在 `query` 中。
-- 在出入参数中，你都可以通过 xxx.xxx 来代表嵌套的对象。
+- Params 为路径请求参数，GET请求中用的居多。
+- Body 为请求体，POST/PUT请求中用的居多。
+- Headers 为请求头，用于传递一些特殊的信息。
+- 3 种数据中均可以通过 `{{}}` 来引用变量。
+- url 也可以通过 `{{}}` 来引用变量。
+- 变量来自于`全局变量`、`系统变量`、`局部传入`
 
 ## 参数结构
 
-### 系统参数说明
+### 系统变量说明
+
+你可以将鼠标放置在`请求参数`旁边的问号中，里面会提示你可用的变量。
 
 - appId: 应用的ID
 - chatId: 当前对话的ID，测试模式下不存在。
 - responseChatItemId: 当前对话中，响应的消息ID，测试模式下不存在。
 - variables: 当前对话的全局变量。
-- data: 自定义传递的参数。
+- cTime: 当前时间。
+- histories: 历史记录（默认最多取10条，无法修改长度）
 
-### 嵌套对象使用
+### Params, Headers
 
-**入参**
+不多描述，使用方法和Postman, ApiFox 基本一致。
 
-假设我们设计了`3个`输入。
+可通过 {{key}} 来引入变量。例如：
 
-- user.name (string)
-- user.age (number)
-- type (string)
+| key | value |
+| --- | --- |
+| appId | {{appId}} |
+| Authorization | Bearer {{token}} |
 
-最终组成的对象为: 
+### Body
+
+只有特定请求类型下会生效。
+
+可以写一个`自定义的 Json`，并通过 {{key}} 来引入变量。例如：
+
+{{< tabs tabTotal="3" >}}
+{{< tab tabName="假设有一组变量" >}}
+{{< markdownify >}}
 
 ```json
 {
-  "user": {
-    "name": "",
-    "age": ""
-  },
-  "type": ""
+  "string": "字符串",
+  "number": 123,
+  "boolean": true,
+  "array": [1, 2, 3],
+  "obj": {
+    "name": "FastGPT",
+    "url": "https://fastgpt.in"
+  }
 }
 ```
 
-**出参**
+{{< /markdownify >}}
+{{< /tab >}}
+{{< tab tabName="Http 模块中的Body声明" >}}
+{{< markdownify >}}
 
-假设接口的输出结构为: 
+注意，在 Body 中，你如果引用`字符串`，则需要加上`""`，例如：`"{{string}}"`。
+
+```json
+{
+  "string": "{{string}}",
+  "token": "Bearer {{string}}",
+  "number": {{number}},
+  "boolean": {{boolean}},
+  "array": [{{number}}, "{{string}}"],
+  "array2": {{array}},
+  "object": {{obj}}
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< tab tabName="最终得到的解析" >}}
+{{< markdownify >}}
+
+```json
+{
+  "string": "字符串",
+  "token": "Bearer 字符串",
+  "number": 123,
+  "boolean": true,
+  "array": [123, "字符串"],
+  "array2": [1, 2, 3],
+  "object": {
+    "name": "FastGPT",
+    "url": "https://fastgpt.in"
+  }
+}
+```
+
+{{< /markdownify >}}
+{{< /tab >}}
+{{< /tabs >}}
+
+### 如何获取返回值
+
+从图中可以看出，FastGPT可以添加多个返回值，这个返回值并不代表接口的返回值，而是代表`如何解析接口返回值`，可以通过 key 来`提取`接口响应的值。例如: 
+
+{{< tabs tabTotal="2" >}}
+{{< tab tabName="接口响应格式" >}}
+{{< markdownify >}}
 
 ```json
 {
   "message": "测试",
   "data":{
-    "name": "name",
-    "age": 10
+      "user": {
+        "name": "xxx",
+        "age": 12
+      },
+      "list": [
+        {
+          "name": "xxx",
+          "age": 50
+        },
+        [{ "test": 22 }]
+      ],
+      "psw": "xxx"
   }
 }
 ```
 
-那么，自定出参的`key`可以设置为: 
-
-- message (string)
-- data.name (string)
-- data.age (number)
-
-
-## POST 示例
-
-**自定义入参**
-
-- user.name (string)
-- user.age (number)
-- type (string)
-
-**自定义出参**
-
-- message (string)
-- data.name (string)
-- data.age (number)
-
-那么，这个模块发出的请求则是:
-
-{{< tabs tabTotal="2" >}}
-{{< tab tabName="POST 请求示例" >}}
-{{< markdownify >}}
-
-```bash
-curl --location --request POST 'http://xxxx.com' \
---header 'Content-Type: application/json' \
---data-raw '{
-  "appId": "65782f7ffae5f7854ed4498b",
-  "chatId": "xxxx",
-  "responseChatItemId": "xxxx",
-  "variables": {
-    "cTime": "2023-12-18 13:45:46"
-  },
-  "data": {
-    "user": {
-      "name": "",
-      "age": ""
-    },
-    "type": ""
-  }
-}'
-```
-
 {{< /markdownify >}}
 {{< /tab >}}
-
-{{< tab tabName="POST响应" >}}
+{{< tab tabName="FastGPT 转化后的格式" >}}
 {{< markdownify >}}
 
 ```json
 {
-  "message": "message",
-  "data": {
-    "name": "name",
-    "age": 10
-  }
+  "message": "测试",
+  "data.user": { "name": "xxx", "age": 12 },
+  "data.user.name": "xxx",
+  "data.user.age": 12,
+  "data.list": [ { "name": "xxx", "age": 50 }, [{ "test": 22 }] ],
+  "data.list[0]": { "name": "xxx", "age": 50 },
+  "data.list[0].name": "xxx",
+  "data.list[0].age": 50,
+  "data.list[1]": [ { "test": 22 } ],
+  "data.list[1][0]": { "test": 22 },
+  "data.list[1][0].test": 22,
+  "data.psw": "xxx"
 }
 ```
+
 {{< /markdownify >}}
 {{< /tab >}}
 {{< /tabs >}}
 
-## GET 示例
 
-GET 中，不推荐使用嵌套参数，否则会出现奇怪的问题。此外，GET 请求中，FastGPT 会将参数扁平化，不会将自定义参单独抽到 data 中，同时全局变量也会扁平化，因此需要注意字段 key 是否冲突。
+你可以配置对应的`key`来从`FastGPT 转化后的格式`获取需要的值，该规则遵守 JS 的对象取值规则。例如：
 
-**自定义入参**
+1. 获取`message`的内容，那么你可以配置`message`的`key`为`message`，这样就可以获取到`message`的内容。
+2. 获取`user的name`，则`key`可以为：`data.user.name`。
+3. 获取list中第二个元素，则`key`可以为：`data.list[1]`，然后输出类型选择字符串，则获自动获取到`[ { "test": 22 } ]`的`json`字符串。
 
-- name (string)
-- age (number)
-- type (string)
+### 自动格式化输出
 
-**自定义出参**
+FastGPT v4.6.8 后，加入了出参格式化功能，主要以`json`格式化成`字符串`为主。如果你的输出类型选择了`字符串`，则会将`HTTP`对应`key`的值，转成`json`字符串进行输出。因此，未来你可以直接从`HTTP`接口输出内容至`文本加工`中，然后拼接适当的提示词，最终输入给`AI对话`。
 
-- message (string)
-- name (string)
-- age (number)
 
-那么，这个模块发出的请求则是:
+{{% alert context="warning" %}}
+HTTP模块非常强大，你可以对接一些公开的API，来提高编排的功能。
 
-{{< tabs tabTotal="2" >}}
-{{< tab tabName="GET 请求示例" >}}
-{{< markdownify >}}
-
-```bash
-curl --location --request GET 'http://xxx.com/test?name&age&type&appId=65782f7ffae5f7854ed4498b&chatId=xxxx&responseChatItemId=xxxx&cTime=2023-12-18 13:45:46'
-```
-
-{{< /markdownify >}}
-{{< /tab >}}
-
-{{< tab tabName="GET 响应" >}}
-{{< markdownify >}}
-
-```json
-{
-  "message": "message",
-  "data": {
-    "name": "name",
-    "age": 10
-  }
-}
-```
-{{< /markdownify >}}
-{{< /tab >}}
-{{< /tabs >}}
-
+如果你不想额外部署服务，可以使用 [Laf](https://laf.dev/) 来快速开发上线接口，即写即发，无需部署。
+{{% /alert %}}
 
 ## laf 对接 HTTP 示例
 
-{{% alert context="warning" %}}
-如果你不想额外部署服务，可以使用 [Laf](https://laf.dev/) 来快速开发上线接口，即写即发，无需部署。
-{{% /alert %}}
 
 下面是在 Laf 编写的 POST 请求示例：
 
@@ -198,16 +201,14 @@ const db = cloud.database()
 
 type RequestType = {
   appId: string;
-  data: {
-    appointment: string;
-    action: 'post' | 'delete' | 'put' | 'get'
-  }
+  appointment: string;
+  action: 'post' | 'delete' | 'put' | 'get'
 }
 
 export default async function (ctx: FunctionContext) {
   try {
     // 从 body 中获取参数
-    const { appId, data: { appointment, action } } = ctx.body as RequestType
+    const { appId, appointment, action } = ctx.body as RequestType
 
     const parseBody = JSON.parse(appointment)
     if (action === 'get') {
@@ -248,4 +249,5 @@ export default async function (ctx: FunctionContext) {
 ## 相关示例
 
 - [谷歌搜索](/docs/workflow/examples/google_search/)
+- [发送飞书webhook](/docs/workflow/examples/feishu_webhook/)
 - [实验室预约（操作数据库）](/docs/workflow/examples/lab_appointment/)

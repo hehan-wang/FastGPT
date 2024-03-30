@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { Box, Flex, IconButton, useTheme, Progress } from '@chakra-ui/react';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import { useQuery } from '@tanstack/react-query';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
@@ -15,7 +15,6 @@ import { serviceSideProps } from '@/web/common/utils/i18n';
 import { useTranslation } from 'next-i18next';
 import { getTrainingQueueLen } from '@/web/core/dataset/api';
 import MyTooltip from '@/components/MyTooltip';
-import Script from 'next/script';
 import CollectionCard from './components/CollectionCard';
 import { useDatasetStore } from '@/web/core/dataset/store/dataset';
 import { useUserStore } from '@/web/support/user/useUserStore';
@@ -24,9 +23,11 @@ import {
   DatasetTypeEnum,
   DatasetTypeMap
 } from '@fastgpt/global/core/dataset/constants';
-import { useConfirm } from '@/web/common/hooks/useConfirm';
-import { useRequest } from '@/web/common/hooks/useRequest';
+import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
+import { useRequest } from '@fastgpt/web/hooks/useRequest';
 import DatasetTypeTag from '@/components/core/dataset/DatasetTypeTag';
+import Head from 'next/head';
+import MyBox from '@/components/common/MyBox';
 
 const DataCard = dynamic(() => import('./components/DataCard'));
 const Test = dynamic(() => import('./components/Test'));
@@ -145,9 +146,17 @@ const Detail = ({ datasetId, currentTab }: { datasetId: string; currentTab: `${T
 
   return (
     <>
-      <Script src="/js/pdf.js" strategy="lazyOnload"></Script>
+      <Head>
+        <title>{datasetDetail?.name}</title>
+      </Head>
       <PageContainer>
-        <Flex flexDirection={['column', 'row']} h={'100%'} pt={[4, 0]}>
+        <MyBox
+          isLoading={isUpdating}
+          display={'flex'}
+          flexDirection={['column', 'row']}
+          h={'100%'}
+          pt={[4, 0]}
+        >
           {isPc ? (
             <Flex
               flexDirection={'column'}
@@ -274,9 +283,9 @@ const Detail = ({ datasetId, currentTab }: { datasetId: string; currentTab: `${T
               {currentTab === TabEnum.import && <Import />}
             </Box>
           )}
-        </Flex>
+        </MyBox>
       </PageContainer>
-      <ConfirmSyncModal isLoading={isUpdating} />
+      <ConfirmSyncModal />
     </>
   );
 };

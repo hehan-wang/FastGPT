@@ -14,15 +14,12 @@ import {
   ModalBody,
   Input,
   Switch,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Link
+  Link,
+  IconButton
 } from '@chakra-ui/react';
 import { QuestionOutlineIcon } from '@chakra-ui/icons';
 import MyIcon from '@fastgpt/web/components/common/Icon';
-import { useLoading } from '@/web/common/hooks/useLoading';
+import { useLoading } from '@fastgpt/web/hooks/useLoading';
 import { useQuery } from '@tanstack/react-query';
 import {
   getShareChatList,
@@ -35,27 +32,33 @@ import { useCopyData } from '@/web/common/hooks/useCopyData';
 import { useForm } from 'react-hook-form';
 import { defaultOutLinkForm } from '@/constants/app';
 import type { OutLinkEditType, OutLinkSchema } from '@fastgpt/global/support/outLink/type.d';
-import { useRequest } from '@/web/common/hooks/useRequest';
-import { formatStorePrice2Read } from '@fastgpt/global/support/wallet/bill/tools';
+import { useRequest } from '@fastgpt/web/hooks/useRequest';
 import { OutLinkTypeEnum } from '@fastgpt/global/support/outLink/constant';
 import { useTranslation } from 'next-i18next';
-import { useToast } from '@/web/common/hooks/useToast';
-import { feConfigs } from '@/web/common/system/staticData';
+import { useToast } from '@fastgpt/web/hooks/useToast';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
 import MyTooltip from '@/components/MyTooltip';
-import MyModal from '@/components/MyModal';
+import MyModal from '@fastgpt/web/components/common/MyModal';
 import dayjs from 'dayjs';
 import { getDocPath } from '@/web/common/system/doc';
 import dynamic from 'next/dynamic';
+import MyMenu from '@/components/MyMenu';
+import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 
 const SelectUsingWayModal = dynamic(() => import('./SelectUsingWayModal'));
 
 const Share = ({ appId }: { appId: string }) => {
   const { t } = useTranslation();
   const { Loading, setIsLoading } = useLoading();
+  const { feConfigs } = useSystemStore();
   const { copyData } = useCopyData();
   const [editLinkData, setEditLinkData] = useState<OutLinkEditType>();
   const [selectedLinkData, setSelectedLinkData] = useState<OutLinkSchema>();
   const { toast } = useToast();
+  const { ConfirmModal, openConfirm } = useConfirm({
+    content: t('support.outlink.Delete link tip'),
+    type: 'delete'
+  });
 
   const {
     isFetching,
@@ -92,7 +95,7 @@ const Share = ({ appId }: { appId: string }) => {
           <Thead>
             <Tr>
               <Th>{t('common.Name')}</Th>
-              <Th>{t('common.Price used')}</Th>
+              <Th>{t('support.outlink.Usage points')}</Th>
               <Th>{t('core.app.share.Is response quote')}</Th>
               {feConfigs?.isPlus && (
                 <>
@@ -110,11 +113,11 @@ const Share = ({ appId }: { appId: string }) => {
               <Tr key={item._id}>
                 <Td>{item.name}</Td>
                 <Td>
-                  {formatStorePrice2Read(item.total)}
+                  {Math.round(item.usagePoints)}
                   {feConfigs?.isPlus
                     ? `${
-                        item.limit && item.limit.credit > -1
-                          ? ` / ￥${item.limit.credit}`
+                        item.limit?.maxUsagePoints && item.limit.maxUsagePoints > -1
+                          ? ` / ${item.limit.maxUsagePoints}`
                           : ` / ${t('common.Unlimited')}`
                       }`
                     : ''}
@@ -131,44 +134,43 @@ const Share = ({ appId }: { appId: string }) => {
                     <Th>{item?.limit?.hookUrl ? '✔' : '✖'}</Th>
                   </>
                 )}
-                <Td>
-                  {item.lastTime ? t(formatTimeToChatTime(item.lastTime)) : t('common.Un used')}
-                </Td>
+                <Td>{item.lastTime ? formatTimeToChatTime(item.lastTime) : t('common.Un used')}</Td>
                 <Td display={'flex'} alignItems={'center'}>
-                  <Menu autoSelect={false} isLazy>
-                    <MenuButton
-                      _hover={{ bg: 'myWhite.600  ' }}
-                      cursor={'pointer'}
-                      borderRadius={'md'}
-                    >
-                      <MyIcon name={'more'} w={'14px'} p={2} />
-                    </MenuButton>
-                    <MenuList color={'myGray.700'} minW={`120px !important`} zIndex={10}>
-                      <MenuItem
-                        onClick={() => {
-                          setSelectedLinkData(item);
-                        }}
-                        py={[2, 3]}
-                      >
-                        <MyIcon name={'copy'} w={['14px', '16px']} />
-                        <Box ml={[1, 2]}>{t('core.app.outLink.Select Mode')}</Box>
-                      </MenuItem>
-                      <MenuItem
-                        onClick={() =>
+                  <Button
+                    onClick={() => setSelectedLinkData(item)}
+                    size={'sm'}
+                    mr={3}
+                    variant={'whitePrimary'}
+                  >
+                    {t('core.app.outLink.Select Mode')}
+                  </Button>
+                  <MyMenu
+                    Button={
+                      <IconButton
+                        icon={<MyIcon name={'more'} w={'14px'} />}
+                        name={'more'}
+                        variant={'whiteBase'}
+                        size={'sm'}
+                        aria-label={''}
+                      />
+                    }
+                    menuList={[
+                      {
+                        label: t('common.Edit'),
+                        icon: 'edit',
+                        onClick: () =>
                           setEditLinkData({
                             _id: item._id,
                             name: item.name,
                             responseDetail: item.responseDetail,
                             limit: item.limit
                           })
-                        }
-                        py={[2, 3]}
-                      >
-                        <MyIcon name={'edit'} w={['14px', '16px']} />
-                        <Box ml={[1, 2]}>{t('common.Edit')}</Box>
-                      </MenuItem>
-                      <MenuItem
-                        onClick={async () => {
+                      },
+                      {
+                        label: t('common.Delete'),
+                        icon: 'delete',
+                        type: 'danger',
+                        onClick: openConfirm(async () => {
                           setIsLoading(true);
                           try {
                             await delShareChatById(item._id);
@@ -177,14 +179,10 @@ const Share = ({ appId }: { appId: string }) => {
                             console.log(error);
                           }
                           setIsLoading(false);
-                        }}
-                        py={[2, 3]}
-                      >
-                        <MyIcon name={'delete'} w={['14px', '16px']} />
-                        <Box ml={[1, 2]}>{t('common.Delete')}</Box>
-                      </MenuItem>
-                    </MenuList>
-                  </Menu>
+                        })
+                      }
+                    ]}
+                  />
                 </Td>
               </Tr>
             ))}
@@ -228,6 +226,7 @@ const Share = ({ appId }: { appId: string }) => {
           onClose={() => setSelectedLinkData(undefined)}
         />
       )}
+      <ConfirmModal />
       <Loading loading={isFetching} fixed={false} />
     </Box>
   );
@@ -249,6 +248,7 @@ function EditLinkModal({
   onCreate: (id: string) => void;
   onEdit: () => void;
 }) {
+  const { feConfigs } = useSystemStore();
   const { t } = useTranslation();
   const {
     register,
@@ -316,15 +316,15 @@ function EditLinkModal({
             </Flex>
             <Flex alignItems={'center'} mt={4}>
               <Flex flex={'0 0 90px'} alignItems={'center'}>
-                {t('common.Max credit')}
-                <MyTooltip label={t('common.Max credit tips' || '')}>
+                {t('support.outlink.Max usage points')}
+                <MyTooltip label={t('support.outlink.Max usage points tip')}>
                   <QuestionOutlineIcon ml={1} />
                 </MyTooltip>
               </Flex>
               <Input
-                {...register('limit.credit', {
+                {...register('limit.maxUsagePoints', {
                   min: -1,
-                  max: 1000,
+                  max: 10000000,
                   valueAsNumber: true,
                   required: true
                 })}

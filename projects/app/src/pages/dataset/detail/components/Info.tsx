@@ -5,7 +5,7 @@ import { DeleteIcon } from '@chakra-ui/icons';
 import { delDatasetById } from '@/web/core/dataset/api';
 import { useSelectFile } from '@/web/common/file/hooks/useSelectFile';
 import { useDatasetStore } from '@/web/core/dataset/store/dataset';
-import { useConfirm } from '@/web/common/hooks/useConfirm';
+import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 import { useForm } from 'react-hook-form';
 import { compressImgFileAndUpload } from '@/web/common/file/controller';
 import type { DatasetItemType } from '@fastgpt/global/core/dataset/type.d';
@@ -13,10 +13,11 @@ import Avatar from '@/components/Avatar';
 import MyTooltip from '@/components/MyTooltip';
 import { useTranslation } from 'next-i18next';
 import PermissionRadio from '@/components/support/permission/Radio';
-import MySelect from '@/components/Select';
-import { qaModelList, vectorModelList } from '@/web/common/system/staticData';
-import { useRequest } from '@/web/common/hooks/useRequest';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
+import { useRequest } from '@fastgpt/web/hooks/useRequest';
 import { MongoImageTypeEnum } from '@fastgpt/global/common/file/image/constants';
+import MySelect from '@fastgpt/web/components/common/MySelect';
+import AIModelSelector from '@/components/Select/AIModelSelector';
 
 const Info = ({ datasetId }: { datasetId: string }) => {
   const { t } = useTranslation();
@@ -24,6 +25,7 @@ const Info = ({ datasetId }: { datasetId: string }) => {
   const { getValues, setValue, register, handleSubmit } = useForm<DatasetItemType>({
     defaultValues: datasetDetail
   });
+  const { datasetModelList, vectorModelList } = useSystemStore();
 
   const router = useRouter();
 
@@ -119,43 +121,39 @@ const Info = ({ datasetId }: { datasetId: string }) => {
         </Box>
         <Input flex={[1, '0 0 300px']} maxLength={30} {...register('name')} />
       </Flex>
-      {vectorModelList.length > 1 && (
-        <Flex mt={8} w={'100%'} alignItems={'center'}>
-          <Box flex={['0 0 90px', '0 0 160px']} w={0}>
-            {t('core.ai.model.Vector Model')}
-          </Box>
-          <Box flex={[1, '0 0 300px']}>{getValues('vectorModel').name}</Box>
-        </Flex>
-      )}
+      <Flex mt={8} w={'100%'} alignItems={'center'}>
+        <Box flex={['0 0 90px', '0 0 160px']} w={0}>
+          {t('core.ai.model.Vector Model')}
+        </Box>
+        <Box flex={[1, '0 0 300px']}>{getValues('vectorModel').name}</Box>
+      </Flex>
       <Flex mt={8} w={'100%'} alignItems={'center'}>
         <Box flex={['0 0 90px', '0 0 160px']} w={0}>
           {t('core.Max Token')}
         </Box>
         <Box flex={[1, '0 0 300px']}>{getValues('vectorModel').maxToken}</Box>
       </Flex>
-      {qaModelList.length > 1 && (
-        <Flex mt={6} alignItems={'center'}>
-          <Box flex={['0 0 90px', '0 0 160px']} w={0}>
-            {t('core.ai.model.Dataset Agent Model')}
-          </Box>
-          <Box flex={[1, '0 0 300px']}>
-            <MySelect
-              w={'100%'}
-              value={getValues('agentModel').model}
-              list={qaModelList.map((item) => ({
-                label: item.name,
-                value: item.model
-              }))}
-              onchange={(e) => {
-                const agentModel = qaModelList.find((item) => item.model === e);
-                if (!agentModel) return;
-                setValue('agentModel', agentModel);
-                setRefresh((state) => !state);
-              }}
-            />
-          </Box>
-        </Flex>
-      )}
+      <Flex mt={6} alignItems={'center'}>
+        <Box flex={['0 0 90px', '0 0 160px']} w={0}>
+          {t('core.ai.model.Dataset Agent Model')}
+        </Box>
+        <Box flex={[1, '0 0 300px']}>
+          <AIModelSelector
+            w={'100%'}
+            value={getValues('agentModel').model}
+            list={datasetModelList.map((item) => ({
+              label: item.name,
+              value: item.model
+            }))}
+            onchange={(e) => {
+              const agentModel = datasetModelList.find((item) => item.model === e);
+              if (!agentModel) return;
+              setValue('agentModel', agentModel);
+              setRefresh((state) => !state);
+            }}
+          />
+        </Box>
+      </Flex>
 
       <Flex mt={8} alignItems={'center'} w={'100%'}>
         <Box flex={['0 0 90px', '0 0 160px']}>{t('common.Intro')}</Box>

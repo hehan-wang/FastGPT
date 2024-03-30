@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { ModalBody, Flex, Box, useTheme, ModalFooter, Button } from '@chakra-ui/react';
-import MyModal from '@/components/MyModal';
+import MyModal from '@fastgpt/web/components/common/MyModal';
 import { useQuery } from '@tanstack/react-query';
 import type { SelectAppItemType } from '@fastgpt/global/core/module/type';
 import Avatar from '@/components/Avatar';
 import { useTranslation } from 'next-i18next';
-import { useLoading } from '@/web/common/hooks/useLoading';
+import { useLoading } from '@fastgpt/web/hooks/useLoading';
 import { useAppStore } from '@/web/core/app/store/useAppStore';
 
 const SelectAppModal = ({
@@ -40,11 +40,10 @@ const SelectAppModal = ({
       title={`选择应用${max > 1 ? `(${selectedApps.length}/${max})` : ''}`}
       iconSrc="/imgs/module/ai.svg"
       onClose={onClose}
-      minW={'700px'}
       position={'relative'}
+      w={'600px'}
     >
       <ModalBody
-        minH={'300px'}
         display={'grid'}
         gridTemplateColumns={['1fr', 'repeat(3, minmax(0, 1fr))']}
         gridGap={4}

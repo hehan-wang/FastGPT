@@ -1,24 +1,31 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { RenderInputProps } from '../type';
 import { onChangeNode, useFlowProviderStore } from '../../../../FlowProvider';
-import { Button, useDisclosure } from '@chakra-ui/react';
+import { Box, Button, Flex, useDisclosure } from '@chakra-ui/react';
 import { useTranslation } from 'next-i18next';
 import { DatasetSearchModeEnum } from '@fastgpt/global/core/dataset/constants';
 import { FlowNodeTypeEnum } from '@fastgpt/global/core/module/node/constant';
 import { ModuleInputKeyEnum } from '@fastgpt/global/core/module/constants';
-import { chatModelList } from '@/web/common/system/staticData';
 import MyIcon from '@fastgpt/web/components/common/Icon';
-import DatasetParamsModal from '@/components/core/module/DatasetParamsModal';
+import DatasetParamsModal, {
+  DatasetParamsProps
+} from '@/components/core/module/DatasetParamsModal';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
+import SearchParamsTip from '@/components/core/dataset/SearchParamsTip';
 
 const SelectDatasetParam = ({ inputs = [], moduleId }: RenderInputProps) => {
   const { nodes } = useFlowProviderStore();
-
   const { t } = useTranslation();
-  const [data, setData] = useState({
+  const { llmModelList } = useSystemStore();
+
+  const [data, setData] = useState<DatasetParamsProps>({
     searchMode: DatasetSearchModeEnum.embedding,
     limit: 5,
     similarity: 0.5,
-    usingReRank: false
+    usingReRank: false,
+    datasetSearchUsingExtensionQuery: true,
+    datasetSearchExtensionModel: llmModelList[0]?.model,
+    datasetSearchExtensionBg: ''
   });
 
   const tokenLimit = useMemo(() => {
@@ -29,14 +36,14 @@ const SelectDatasetParam = ({ inputs = [], moduleId }: RenderInputProps) => {
         const model =
           item.data.inputs.find((item) => item.key === ModuleInputKeyEnum.aiModel)?.value || '';
         const quoteMaxToken =
-          chatModelList.find((item) => item.model === model)?.quoteMaxToken || 3000;
+          llmModelList.find((item) => item.model === model)?.quoteMaxToken || 3000;
 
         maxTokens = Math.max(maxTokens, quoteMaxToken);
       }
     });
 
     return maxTokens;
-  }, [nodes]);
+  }, [llmModelList, nodes]);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -55,41 +62,60 @@ const SelectDatasetParam = ({ inputs = [], moduleId }: RenderInputProps) => {
   const Render = useMemo(() => {
     return (
       <>
-        <Button
-          variant={'whitePrimary'}
-          leftIcon={<MyIcon name={'common/settingLight'} w={'14px'} />}
-          onClick={onOpen}
-        >
+        {/* label */}
+        <Flex alignItems={'center'} mb={3}>
           {t('core.dataset.search.Params Setting')}
-        </Button>
-        {isOpen && (
-          <DatasetParamsModal
-            {...data}
-            maxTokens={tokenLimit}
-            onClose={onClose}
-            onSuccess={(e) => {
-              for (let key in e) {
-                const item = inputs.find((input) => input.key === key);
-                if (!item) continue;
-                onChangeNode({
-                  moduleId,
-                  type: 'updateInput',
-                  key,
-                  value: {
-                    ...item,
-                    //@ts-ignore
-                    value: e[key]
-                  }
-                });
-              }
+          <MyIcon
+            name={'common/settingLight'}
+            ml={2}
+            w={'16px'}
+            cursor={'pointer'}
+            _hover={{
+              color: 'primary.600'
             }}
+            onClick={onOpen}
           />
-        )}
+        </Flex>
+        <SearchParamsTip
+          searchMode={data.searchMode}
+          similarity={data.similarity}
+          limit={data.limit}
+          usingReRank={data.usingReRank}
+          usingQueryExtension={data.datasetSearchUsingExtensionQuery}
+        />
       </>
     );
-  }, [data, inputs, isOpen, moduleId, onClose, onOpen, t, tokenLimit]);
+  }, [data, onOpen, t]);
 
-  return Render;
+  return (
+    <>
+      {Render}
+      {isOpen && (
+        <DatasetParamsModal
+          {...data}
+          maxTokens={tokenLimit}
+          onClose={onClose}
+          onSuccess={(e) => {
+            setData(e);
+            for (let key in e) {
+              const item = inputs.find((input) => input.key === key);
+              if (!item) continue;
+              onChangeNode({
+                moduleId,
+                type: 'updateInput',
+                key,
+                value: {
+                  ...item,
+                  //@ts-ignore
+                  value: e[key]
+                }
+              });
+            }
+          }}
+        />
+      )}
+    </>
+  );
 };
 
 export default React.memo(SelectDatasetParam);

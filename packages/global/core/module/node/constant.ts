@@ -1,4 +1,5 @@
 export enum FlowNodeInputTypeEnum {
+  triggerAndFinish = 'triggerAndFinish',
   systemInput = 'systemInput', // history, userChatInput, variableInput
 
   input = 'input', // one line input
@@ -20,13 +21,13 @@ export enum FlowNodeInputTypeEnum {
   aiSettings = 'aiSettings',
 
   // ai model select
-  selectChatModel = 'selectChatModel',
-  selectCQModel = 'selectCQModel',
-  selectExtractModel = 'selectExtractModel',
+  selectLLMModel = 'selectLLMModel',
+  settingLLMModel = 'settingLLMModel',
 
   // dataset special input
   selectDataset = 'selectDataset',
   selectDatasetParamsModal = 'selectDatasetParamsModal',
+  settingDatasetQuotePrompt = 'settingDatasetQuotePrompt',
 
   hidden = 'hidden',
   custom = 'custom'
@@ -45,16 +46,22 @@ export enum FlowNodeTypeEnum {
   questionInput = 'questionInput',
   historyNode = 'historyNode',
   chatNode = 'chatNode',
+
   datasetSearchNode = 'datasetSearchNode',
+  datasetConcatNode = 'datasetConcatNode',
+
   answerNode = 'answerNode',
   classifyQuestion = 'classifyQuestion',
   contentExtract = 'contentExtract',
   httpRequest = 'httpRequest',
+  httpRequest468 = 'httpRequest468',
   runApp = 'app',
   pluginModule = 'pluginModule',
   pluginInput = 'pluginInput',
   pluginOutput = 'pluginOutput',
-  cfr = 'cfr'
+  queryExtension = 'cfr',
+  tools = 'tools',
+  stopTool = 'stopTool'
 
   // abandon
 }

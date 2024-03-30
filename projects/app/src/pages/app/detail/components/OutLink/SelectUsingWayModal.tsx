@@ -1,6 +1,6 @@
 import { OutLinkSchema } from '@fastgpt/global/support/outLink/type';
 import React, { useCallback, useState } from 'react';
-import MyModal from '@/components/MyModal';
+import MyModal from '@fastgpt/web/components/common/MyModal';
 import { useTranslation } from 'next-i18next';
 import { Box, Flex, FlexProps, Grid, Image, ModalBody, Switch, useTheme } from '@chakra-ui/react';
 import MyRadio from '@/components/common/MyRadio';
@@ -9,7 +9,7 @@ import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useCopyData } from '@/web/common/hooks/useCopyData';
 import { useSelectFile } from '@/web/common/file/hooks/useSelectFile';
 import { fileToBase64 } from '@/web/common/file/utils';
-import { feConfigs } from '@/web/common/system/staticData';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
 
 enum UsingWayEnum {
   link = 'link',
@@ -25,6 +25,7 @@ const SelectUsingWayModal = ({ share, onClose }: { share: OutLinkSchema; onClose
     multiple: false,
     fileType: 'image/*'
   });
+  const { feConfigs } = useSystemStore();
 
   const VariableTypeList = [
     {
@@ -101,7 +102,10 @@ const SelectUsingWayModal = ({ share, onClose }: { share: OutLinkSchema; onClose
   data-open-icon="${getValues('scriptOpenIcon')}"
   data-close-icon="${getValues('scriptCloseIcon')}"
   defer
-/>`
+/>
+<script>
+console.log("Chat box loaded")
+</script>`
     }
   };
 
@@ -135,7 +139,7 @@ const SelectUsingWayModal = ({ share, onClose }: { share: OutLinkSchema; onClose
         />
 
         {/* config */}
-        <Grid gridTemplateColumns={['repeat(3,1fr)']} gridGap={4} my={5}>
+        <Grid gridTemplateColumns={['repeat(2,1fr)', 'repeat(3,1fr)']} gridGap={4} my={5}>
           <Flex {...gridItemStyle}>
             <Box flex={1}>{t('core.app.outLink.Show History')}</Box>
             <Switch {...register('showHistory')} />

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
-import MyModal from '@/components/MyModal';
+import MyModal from '@fastgpt/web/components/common/MyModal';
 import {
   Button,
   ModalFooter,
@@ -14,16 +14,17 @@ import { useQuery } from '@tanstack/react-query';
 import { getTeamList, updateInviteResult } from '@/web/support/user/team/api';
 import { TeamMemberStatusEnum } from '@fastgpt/global/support/user/team/constant';
 import Avatar from '@/components/Avatar';
-import { useRequest } from '@/web/common/hooks/useRequest';
-import { useToast } from '@/web/common/hooks/useToast';
-import { useConfirm } from '@/web/common/hooks/useConfirm';
-import { feConfigs } from '@/web/common/system/staticData';
+import { useRequest } from '@fastgpt/web/hooks/useRequest';
+import { useToast } from '@fastgpt/web/hooks/useToast';
+import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
 
 const UpdateInviteModal = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { toast } = useToast();
   const { ConfirmModal, openConfirm } = useConfirm({});
+  const { feConfigs } = useSystemStore();
 
   const { data: inviteList = [], refetch } = useQuery(['getInviteList'], () =>
     feConfigs.isPlus ? getTeamList(TeamMemberStatusEnum.waiting) : []

@@ -1,13 +1,13 @@
 import React from 'react';
-import MyModal from '@/components/MyModal';
+import MyModal from '@fastgpt/web/components/common/MyModal';
 import { useTranslation } from 'next-i18next';
 import { Box, Button, Input, Link, ModalBody, ModalFooter } from '@chakra-ui/react';
 import { strIsLink } from '@fastgpt/global/common/string/tools';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import { useForm } from 'react-hook-form';
-import { useConfirm } from '@/web/common/hooks/useConfirm';
+import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 import { getDocPath } from '@/web/common/system/doc';
-import { feConfigs } from '@/web/common/system/staticData';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
 
 type FormType = {
   url?: string | undefined;
@@ -27,6 +27,7 @@ const WebsiteConfigModal = ({
   defaultValue?: FormType;
 }) => {
   const { t } = useTranslation();
+  const { feConfigs } = useSystemStore();
   const { toast } = useToast();
   const { register, handleSubmit } = useForm({
     defaultValues: defaultValue

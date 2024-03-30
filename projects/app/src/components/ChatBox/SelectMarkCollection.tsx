@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { ModalBody, useTheme, ModalFooter, Button, Box, Card, Flex, Grid } from '@chakra-ui/react';
 import { useTranslation } from 'next-i18next';
 import Avatar from '../Avatar';
@@ -8,7 +8,6 @@ import DatasetSelectModal, { useDatasetSelect } from '@/components/core/dataset/
 import dynamic from 'next/dynamic';
 import { AdminFbkType } from '@fastgpt/global/core/chat/type.d';
 import SelectCollections from '@/web/core/dataset/components/SelectCollections';
-import { getDefaultIndex } from '@fastgpt/global/core/dataset/utils';
 
 const InputDataModal = dynamic(() => import('@/pages/dataset/detail/components/InputDataModal'));
 
@@ -33,8 +32,6 @@ const SelectMarkCollection = ({
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const [selectedDatasetId, setSelectedDatasetId] = useState<string>();
-  const [selectedDatasetCollectionIds, setSelectedDatasetCollectionIds] = useState<string[]>([]);
   const { paths, setParentId, datasets, isFetching } = useDatasetSelect();
 
   return (
@@ -46,17 +43,18 @@ const SelectMarkCollection = ({
           paths={paths}
           onClose={onClose}
           setParentId={setParentId}
+          isLoading={isFetching}
           tips={t('core.chat.Select dataset Desc')}
         >
           <ModalBody flex={'1 0 0'} overflowY={'auto'}>
             <Grid
+              display={'grid'}
               gridTemplateColumns={['repeat(1,1fr)', 'repeat(2,1fr)', 'repeat(3,1fr)']}
               gridGap={3}
               userSelect={'none'}
             >
               {datasets.map((item) =>
                 (() => {
-                  const selected = selectedDatasetId === item._id;
                   return (
                     <Card
                       key={item._id}
@@ -68,16 +66,11 @@ const SelectMarkCollection = ({
                       _hover={{
                         boxShadow: 'md'
                       }}
-                      {...(selected
-                        ? {
-                            bg: 'primary.200'
-                          }
-                        : {})}
                       onClick={() => {
                         if (item.type === DatasetTypeEnum.folder) {
                           setParentId(item._id);
                         } else {
-                          setSelectedDatasetId(item._id);
+                          setAdminMarkData({ ...adminMarkData, datasetId: item._id });
                         }
                       }}
                     >
@@ -105,29 +98,21 @@ const SelectMarkCollection = ({
               </Flex>
             )}
           </ModalBody>
-          <ModalFooter>
-            <Button
-              isLoading={isFetching}
-              isDisabled={!selectedDatasetId}
-              onClick={() => {
-                setAdminMarkData({ ...adminMarkData, datasetId: selectedDatasetId });
-              }}
-            >
-              {t('common.Next Step')}
-            </Button>
-          </ModalFooter>
         </DatasetSelectModal>
       )}
 
       {/* select collection */}
-      {adminMarkData.datasetId && !adminMarkData.collectionId && (
+      {adminMarkData.datasetId && (
         <SelectCollections
           datasetId={adminMarkData.datasetId}
           type={'collection'}
           title={t('dataset.collections.Select One Collection To Store')}
           onClose={onClose}
           onChange={({ collectionIds }) => {
-            setSelectedDatasetCollectionIds(collectionIds);
+            setAdminMarkData({
+              ...adminMarkData,
+              collectionId: collectionIds[0]
+            });
           }}
           CustomFooter={
             <ModalFooter>
@@ -143,17 +128,6 @@ const SelectMarkCollection = ({
               >
                 {t('common.Last Step')}
               </Button>
-              <Button
-                isDisabled={selectedDatasetCollectionIds.length === 0}
-                onClick={() => {
-                  setAdminMarkData({
-                    ...adminMarkData,
-                    collectionId: selectedDatasetCollectionIds[0]
-                  });
-                }}
-              >
-                {t('common.Next Step')}
-              </Button>
             </ModalFooter>
           }
         />
@@ -162,7 +136,12 @@ const SelectMarkCollection = ({
       {/* input data */}
       {adminMarkData.datasetId && adminMarkData.collectionId && (
         <InputDataModal
-          onClose={onClose}
+          onClose={() => {
+            setAdminMarkData({
+              ...adminMarkData,
+              collectionId: undefined
+            });
+          }}
           collectionId={adminMarkData.collectionId}
           dataId={adminMarkData.dataId}
           defaultValue={{

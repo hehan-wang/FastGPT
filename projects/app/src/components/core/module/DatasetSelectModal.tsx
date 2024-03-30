@@ -12,14 +12,14 @@ import {
 } from '@chakra-ui/react';
 import Avatar from '@/components/Avatar';
 import type { SelectedDatasetType } from '@fastgpt/global/core/module/api.d';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import MyTooltip from '@/components/MyTooltip';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import { DatasetTypeEnum } from '@fastgpt/global/core/dataset/constants';
 import { useTranslation } from 'next-i18next';
 import { useDatasetStore } from '@/web/core/dataset/store/dataset';
 import DatasetSelectContainer, { useDatasetSelect } from '@/components/core/dataset/SelectModal';
-import { useLoading } from '@/web/common/hooks/useLoading';
+import { useLoading } from '@fastgpt/web/hooks/useLoading';
 import EmptyTip from '@/components/EmptyTip';
 
 export const DatasetSelectModal = ({

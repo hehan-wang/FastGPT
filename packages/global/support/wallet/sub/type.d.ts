@@ -1,39 +1,66 @@
 import { StandardSubLevelEnum, SubModeEnum, SubStatusEnum, SubTypeEnum } from './constants';
 
+// Content of plan
+export type TeamStandardSubPlanItemType = {
+  price: number; // read price / month
+  pointPrice: number; // read price/ one thousand
+  totalPoints: number; // n
+  maxTeamMember: number;
+  maxAppAmount: number; // max app or plugin amount
+  maxDatasetAmount: number;
+  chatHistoryStoreDuration: number; // n day
+  maxDatasetSize: number;
+  trainingWeight: number; // 1~4
+  permissionCustomApiKey: boolean;
+  permissionCustomCopyright: boolean; // feature
+  permissionWebsiteSync: boolean;
+  permissionReRank: boolean;
+};
+
+export type StandSubPlanLevelMapType = Record<
+  `${StandardSubLevelEnum}`,
+  TeamStandardSubPlanItemType
+>;
+
+export type SubPlanType = {
+  [SubTypeEnum.standard]: StandSubPlanLevelMapType;
+  [SubTypeEnum.extraDatasetSize]: {
+    price: number;
+  };
+  [SubTypeEnum.extraPoints]: {
+    price: number;
+  };
+};
+
 export type TeamSubSchema = {
   _id: string;
   teamId: string;
   type: `${SubTypeEnum}`;
   status: `${SubStatusEnum}`;
-  mode: `${SubModeEnum}`;
   startTime: Date;
   expiredTime: Date;
   price: number;
 
-  currentSubLevel?: `${StandardSubLevelEnum}`;
-  nextSubLevel?: `${StandardSubLevelEnum}`;
+  currentMode: `${SubModeEnum}`;
+  nextMode: `${SubModeEnum}`;
+  currentSubLevel: `${StandardSubLevelEnum}`;
+  nextSubLevel: `${StandardSubLevelEnum}`;
 
-  currentExtraDatasetSize?: number;
-  nextExtraDatasetSize?: number;
+  pointPrice: number;
+  totalPoints: number;
+  surplusPoints: number;
 
-  currentExtraPoints?: number;
-  nextExtraPoints?: number;
+  currentExtraDatasetSize: number;
+};
 
-  maxTeamMember?: number;
-  maxAppAmount?: number;
-  maxDatasetAmount?: number;
-  chatHistoryStoreDuration?: number;
-  maxDatasetSize?: number;
-  customApiKey?: boolean;
-  customCopyright?: number;
-  exportDatasetInterval?: number;
-  websiteSyncInterval?: number;
-  reRankWeight?: number;
-  totalPoints?: number;
+export type FeTeamPlanStatusType = {
+  [SubTypeEnum.standard]?: TeamSubSchema;
+  standardConstants?: TeamStandardSubPlanItemType;
 
-  surplusPoints?: number;
+  totalPoints: number;
+  usedPoints: number;
 
-  // abandon
-  datasetStoreAmount?: number;
-  renew?: boolean;
+  // standard + extra
+  datasetMaxSize: number;
+  usedDatasetSize: number;
 };

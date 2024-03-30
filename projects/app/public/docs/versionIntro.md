@@ -1,12 +1,13 @@
-### Fast GPT V4.6.7
+### FastGPT V4.7
 
-1. 修改了知识库UI及新的导入交互方式。
-2. 优化知识库和对话的数据索引，加快数据操作。
-3. 知识库 openAPI，支持通过 API 操作知识库。
-4. 新增 - 输入框变量提示。输入 { 号后将会获得可用变量提示。根据社区针对高级编排的反馈，我们计划于 2 月份的版本中，优化变量内容，支持模块的局部变量以及更多全局变量写入。
-5. 优化 - 切换团队后会保存记录，下次登录时优先登录该团队。
-6. 修复 - API 对话时，chatId 冲突问题。
-7. 修复 - Iframe 嵌入网页可能导致的 window.onLoad 冲突。
-8. [使用文档](https://doc.fastgpt.in/docs/intro/)
-9. [点击查看高级编排介绍文档](https://doc.fastgpt.in/docs/workflow)
-10. [点击查看商业版](https://doc.fastgpt.in/docs/commercial/)
+1. 新增 - 工具调用模块，可以让LLM模型根据用户意图，动态的选择其他模型或插件执行。
+2. 新增 - 分类和内容提取支持 functionCall 模式。部分模型支持 functionCall 不支持 ToolCall，也可以使用了。需要把 LLM 模型配置文件里的 `functionCall` 设置为 `true`， `toolChoice`设置为 `false`。如果 `toolChoice` 为 true，会走 tool 模式。
+3. 新增 - HTTP插件，可实现OpenAPI快速生成插件。
+4. 优化 - 高级编排性能。
+5. 优化 - AI模型选择。
+6. 优化 - 手动输入知识库弹窗。
+7. 优化 - 变量输入弹窗。
+8. 优化 - 浏览器读取文件自动推断编码，减少乱码情况。
+9. [点击查看高级编排介绍文档](https://doc.fastgpt.in/docs/workflow/intro)
+10. [使用文档](https://doc.fastgpt.in/docs/intro/)
+11. [点击查看商业版](https://doc.fastgpt.in/docs/commercial/)

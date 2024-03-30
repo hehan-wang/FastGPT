@@ -1,10 +1,12 @@
-import { chatModelList } from '@/web/common/system/staticData';
 import { FlowNodeTypeEnum } from '@fastgpt/global/core/module/node/constant';
 import { ModuleItemType } from '@fastgpt/global/core/module/type.d';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
 
 export function checkChatSupportSelectFileByChatModels(models: string[] = []) {
+  const llmModelList = useSystemStore.getState().llmModelList;
+
   for (const model of models) {
-    const modelData = chatModelList.find((item) => item.model === model || item.name === model);
+    const modelData = llmModelList.find((item) => item.model === model || item.name === model);
     if (modelData?.vision) {
       return true;
     }
@@ -13,7 +15,10 @@ export function checkChatSupportSelectFileByChatModels(models: string[] = []) {
 }
 
 export function checkChatSupportSelectFileByModules(modules: ModuleItemType[] = []) {
-  const chatModules = modules.filter((item) => item.flowType === FlowNodeTypeEnum.chatNode);
+  const chatModules = modules.filter(
+    (item) =>
+      item.flowType === FlowNodeTypeEnum.chatNode || item.flowType === FlowNodeTypeEnum.tools
+  );
   const models: string[] = chatModules.map(
     (item) => item.inputs.find((item) => item.key === 'model')?.value || ''
   );

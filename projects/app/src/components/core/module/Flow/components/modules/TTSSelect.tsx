@@ -4,13 +4,13 @@ import { QuestionOutlineIcon } from '@chakra-ui/icons';
 import { Box, Button, Flex, ModalBody, useDisclosure, Image } from '@chakra-ui/react';
 import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'next-i18next';
-import MySelect from '@/components/Select';
 import { TTSTypeEnum } from '@/constants/app';
 import type { AppTTSConfigType } from '@fastgpt/global/core/module/type.d';
 import { useAudioPlay } from '@/web/common/utils/voice';
-import { audioSpeechModelList } from '@/web/common/system/staticData';
-import MyModal from '@/components/MyModal';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
+import MyModal from '@fastgpt/web/components/common/MyModal';
 import MySlider from '@/components/Slider';
+import MySelect from '@fastgpt/web/components/common/MySelect';
 
 const TTSSelect = ({
   value,
@@ -20,6 +20,7 @@ const TTSSelect = ({
   onChange: (e: AppTTSConfigType) => void;
 }) => {
   const { t } = useTranslation();
+  const { audioSpeechModelList } = useSystemStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const list = useMemo(
@@ -28,7 +29,7 @@ const TTSSelect = ({
       { label: t('core.app.tts.Web'), value: TTSTypeEnum.web },
       ...audioSpeechModelList.map((item) => item?.voices || []).flat()
     ],
-    [t]
+    [audioSpeechModelList, t]
   );
 
   const formatValue = useMemo(() => {
@@ -66,7 +67,7 @@ const TTSSelect = ({
         });
       }
     },
-    [onChange, value]
+    [audioSpeechModelList, onChange, value]
   );
 
   return (
@@ -78,17 +79,16 @@ const TTSSelect = ({
       </MyTooltip>
       <Box flex={1} />
       <MyTooltip label={t('core.app.Select TTS')}>
-        <Box
-          cursor={'pointer'}
-          _hover={{ bg: 'myGray.100' }}
-          py={2}
-          px={3}
-          borderRadius={'md'}
+        <Button
+          variant={'transparentBase'}
+          iconSpacing={1}
+          size={'sm'}
+          fontSize={'md'}
+          mr={'-5px'}
           onClick={onOpen}
-          color={'myGray.600'}
         >
           {formLabel}
-        </Box>
+        </Button>
       </MyTooltip>
       <MyModal
         title={
@@ -106,7 +106,7 @@ const TTSSelect = ({
             {t('core.app.tts.Speech model')}
             <MySelect w={'220px'} value={formatValue} list={list} onchange={onclickChange} />
           </Flex>
-          <Flex mt={8} justifyContent={'space-between'} alignItems={'center'}>
+          <Flex mt={8} justifyContent={'space-between'}>
             {t('core.app.tts.Speech speed')}
             <MySlider
               markList={[

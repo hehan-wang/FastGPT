@@ -1,23 +1,22 @@
-import { initSystemConfig } from '@/pages/api/common/system/getInitData';
-import { generateQA } from '@/service/events/generateQA';
-import { generateVector } from '@/service/events/generateVector';
 import { setCron } from '@fastgpt/service/common/system/cron';
+import { startTrainingQueue } from '@/service/core/dataset/training/utils';
+import { clearTmpUploadFiles } from '@fastgpt/service/common/file/utils';
 
 export const startCron = () => {
-  setUpdateSystemConfigCron();
   setTrainingQueueCron();
-};
-
-export const setUpdateSystemConfigCron = () => {
-  setCron('*/5 * * * *', () => {
-    initSystemConfig();
-    console.log('refresh system config');
-  });
+  setClearTmpUploadFilesCron();
 };
 
 export const setTrainingQueueCron = () => {
   setCron('*/1 * * * *', () => {
-    generateVector();
-    generateQA();
+    startTrainingQueue();
+  });
+};
+
+export const setClearTmpUploadFilesCron = () => {
+  clearTmpUploadFiles();
+  // Clear tmp upload files every ten minutes
+  setCron('*/10 * * * *', () => {
+    clearTmpUploadFiles();
   });
 };

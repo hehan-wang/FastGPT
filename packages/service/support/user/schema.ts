@@ -1,7 +1,6 @@
 import { connectionMongo, type Model } from '../../common/mongo';
 const { Schema, model, models } = connectionMongo;
 import { hashStr } from '@fastgpt/global/common/string/tools';
-import { PRICE_SCALE } from '@fastgpt/global/support/wallet/bill/constants';
 import type { UserModelSchema } from '@fastgpt/global/support/user/type';
 import { UserStatusEnum, userStatusMap } from '@fastgpt/global/support/user/constant';
 
@@ -19,6 +18,15 @@ const UserSchema = new Schema({
     required: true,
     unique: true // 唯一
   },
+  email: {
+    type: String
+  },
+  phonePrefix: {
+    type: Number
+  },
+  phone: {
+    type: String
+  },
   password: {
     type: String,
     required: true,
@@ -33,10 +41,6 @@ const UserSchema = new Schema({
   avatar: {
     type: String,
     default: '/icon/human.svg'
-  },
-  balance: {
-    type: Number,
-    default: 2 * PRICE_SCALE
   },
   inviterId: {
     // 谁邀请注册的
@@ -63,6 +67,8 @@ const UserSchema = new Schema({
 });
 
 try {
+  // login
+  UserSchema.index({ username: 1, password: 1 });
   UserSchema.index({ createTime: -1 });
 } catch (error) {
   console.log(error);

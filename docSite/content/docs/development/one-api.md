@@ -1,6 +1,6 @@
 ---
-title: '接入微软、ChatGLM、本地模型等'
-description: '部署和接入 OneAPI，实现对各种大模型的支持'
+title: '部署和使用OneAPI，实现Azure、ChatGLM、本地模型接入'
+description: '部署和使用OneAPI，实现Azure、ChatGLM、本地模型接入。OneAPI使用教程'
 icon: 'Api'
 draft: false
 toc: true
@@ -11,7 +11,19 @@ weight: 708
 * [One API](https://github.com/songquanpeng/one-api) 是一个 OpenAI 接口管理 & 分发系统，可以通过标准的 OpenAI API 格式访问所有的大模型，开箱即用。
 * FastGPT 可以通过接入 OneAPI 来实现对不同大模型的支持。OneAPI 的部署方法也很简单。
 
-## MySQL 版本
+## FastGPT 与 OneAPI 关系
+
+可以把 OneAPI 当做一个网关。
+
+![](/imgs/sealos-fastgpt.webp)
+
+## 部署
+
+### docker 版本
+
+已加入最新的`docker-compose.yml`文件中。
+
+### Sealos - MySQL 版本
 
 MySQL 版本支持多实例，高并发。
 
@@ -21,7 +33,7 @@ MySQL 版本支持多实例，高并发。
 
 部署完后会跳转「应用管理」，数据库在另一个应用「数据库」中。需要等待 1~3 分钟数据库运行后才能访问成功。
 
-## SqlLite 版本
+### Sealos - SqlLite 版本
 
 SqlLite 版本不支持多实例，适合个人小流量使用，但是价格非常便宜。
 
@@ -29,7 +41,7 @@ SqlLite 版本不支持多实例，适合个人小流量使用，但是价格非
 
 **2. 打开 AppLaunchpad(应用管理) 工具**
 
-![step1](/imgs/oneapi-step1.jpg)
+![step1](/imgs/oneapi-step1.webp)
 
 **3. 点击创建新应用**
 
@@ -50,7 +62,21 @@ BATCH_UPDATE_ENABLED=true
 BATCH_UPDATE_INTERVAL=60
 ```
 
-## One API使用步骤
+## One API使用教程
+
+### 概念
+
+1. 渠道：
+   1. OneApi 中一个渠道对应一个 `Api Key`，这个 `Api Key` 可以是GPT、微软、ChatGLM、文心一言的。一个`Api Key`通常可以调用同一个厂商的多个模型。
+   2. OneAPI 会根据请求传入的`模型`来决定使用哪一个`Key`，如果一个模型对应了多个`Key`，则会随机调用。
+2. 令牌：访问 OneAPI 所需的凭证，只需要这`1`个凭证即可访问`OneAPI`上配置的模型。因此`FastGPT`中，只需要配置`OneAPI`的`baseurl`和`令牌`即可。
+
+### 大致工作流程
+
+1. 客户端请求 OneAPI
+2. 根据请求中的 `model` 参数，匹配对应的渠道（根据渠道里的模型进行匹配，必须完全一致）。如果匹配到多个渠道，则随机选择一个（同优先级）。
+3. OneAPI 向真正的地址发出请求。
+4. OneAPI 将结果返回给客户端。
 
 ### 1. 登录 One API
 
@@ -62,13 +88,17 @@ BATCH_UPDATE_INTERVAL=60
 
 ### 2. 创建渠道和令牌
 
-在 One API 中添加对应渠道，直接点击 【添加基础模型】，不要遗漏了向量模型
+在 One API 中添加对应渠道，直接点击 【添加基础模型】，不要遗漏了向量模型（Embedding）
 ![step6](/imgs/oneapi-step6.png)
 
 创建一个令牌
 ![step7](/imgs/oneapi-step7.png)
 
-### 3. 修改 FastGPT 的环境变量
+### 3. 修改账号余额
+
+OneAPI 默认 root 用户只有 200刀，可以自行修改编辑。
+
+### 4. 修改 FastGPT 的环境变量
 
 有了 One API 令牌后，FastGPT 可以通过修改 `baseurl` 和 `key` 去请求到 One API，再由 One API 去请求不同的模型。修改下面两个环境变量：
 
@@ -89,24 +119,61 @@ CHAT_API_KEY=sk-xxxxxx
 
 ### 2. 修改 FastGPT 配置文件
 
-可以在 `/projects/app/src/data/config.json` 里找到配置文件（本地开发需要复制成 config.local.json），配置文件中有一项是对话模型配置：
+可以在 `/projects/app/src/data/config.json` 里找到配置文件（本地开发需要复制成 config.local.json），配置文件中有一项是**对话模型配置**：
 
 ```json
-"ChatModels": [
+"llmModels": [
     ...
     {
       "model": "ERNIE-Bot", // 这里的模型需要对应 One API 的模型
       "name": "文心一言", // 对外展示的名称
-      "maxContext": 8000, // 最大长下文 token，无论什么模型都按 GPT35 的计算。GPT 外的模型需要自行大致计算下这个值。可以调用官方接口去比对 Token 的倍率，然后在这里粗略计算。
-      "maxResponse": 4000, // 最大回复 token
-      // 例如：文心一言的中英文 token 基本是 1:1，而 GPT 的中文 Token 是 2:1，如果文心一言官方最大 Token 是 4000，那么这里就可以填 8000，保险点就填 7000.
-      "quoteMaxToken": 2000, // 引用知识库的最大 Token
-      "maxTemperature": 1, // 最大温度
-      "vision": false, // 是否开启图片识别
-      "defaultSystemChatPrompt": "" // 默认的系统提示词
+      "avatar": "/imgs/model/openai.svg", // 模型的logo
+      "maxContext": 16000, // 最大上下文
+      "maxResponse": 4000, // 最大回复
+      "quoteMaxToken": 13000, // 最大引用内容
+      "maxTemperature": 1.2, // 最大温度
+      "charsPointsPrice": 0, 
+      "censor": false,
+      "vision": false, // 是否支持图片输入
+      "datasetProcess": false, // 是否设置为知识库处理模型
+      "usedInClassify": true, // 是否用于问题分类
+      "usedInExtractFields": true, // 是否用于字段提取
+      "usedInToolCall": true, // 是否用于工具调用
+      "usedInQueryExtension": true, // 是否用于问题优化
+      "toolChoice": true, // 是否支持工具选择
+      "functionCall": false, // 是否支持函数调用
+      "customCQPrompt": "", // 自定义文本分类提示词（不支持工具和函数调用的模型
+      "customExtractPrompt": "", // 自定义内容提取提示词
+      "defaultSystemChatPrompt": "", // 对话默认携带的系统提示词
+      "defaultConfig":{}  // 请求API时，挟带一些默认配置（比如 GLM4 的 top_p）
     }
     ...
 ],
 ```
 
-添加完后，重启 FastGPT 即可在选择文心一言模型进行对话。
+**添加向量模型:**
+
+```json
+"vectorModels": [
+  ......
+    {
+      "model": "text-embedding-ada-002",
+      "name": "Embedding-2",
+      "avatar": "/imgs/model/openai.svg",
+      "charsPointsPrice": 0,
+      "defaultToken": 700,
+      "maxToken": 3000,
+      "weight": 100
+    },
+  ......
+]
+```
+
+### 3. 重启 FastGPT
+
+```bash
+docker-compose down
+docker-compose up -d
+```
+
+重启 FastGPT 即可在选择文心一言模型进行对话。**添加向量模型也是类似操作，增加到 `vectorModels`里。**

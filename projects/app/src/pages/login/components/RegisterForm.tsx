@@ -1,18 +1,19 @@
 import React, { useState, Dispatch, useCallback } from 'react';
-import { FormControl, Box, Input, Button, FormErrorMessage, Flex } from '@chakra-ui/react';
+import { FormControl, Box, Input, Button } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
-import { PageTypeEnum } from '@/constants/user';
+import { LoginPageTypeEnum } from '@/constants/user';
 import { postRegister } from '@/web/support/user/api';
 import { useSendCode } from '@/web/support/user/hooks/useSendCode';
 import type { ResLogin } from '@/global/support/api/userRes';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import { postCreateApp } from '@/web/core/app/api';
 import { appTemplates } from '@/web/core/app/templates';
-import { feConfigs } from '@/web/common/system/staticData';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
+import { useTranslation } from 'next-i18next';
 
 interface Props {
   loginSuccess: (e: ResLogin) => void;
-  setPageType: Dispatch<`${PageTypeEnum}`>;
+  setPageType: Dispatch<`${LoginPageTypeEnum}`>;
 }
 
 interface RegisterType {
@@ -24,6 +25,8 @@ interface RegisterType {
 
 const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
+  const { feConfigs } = useSystemStore();
   const {
     register,
     handleSubmit,
@@ -68,7 +71,7 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
           appTemplates.forEach((template) => {
             postCreateApp({
               avatar: template.avatar,
-              name: template.name,
+              name: t(template.name),
               modules: template.modules,
               type: template.type
             });
@@ -82,7 +85,7 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
       }
       setRequesting(false);
     },
-    [loginSuccess, toast]
+    [loginSuccess, t, toast]
   );
 
   return (
@@ -193,7 +196,7 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
           color={'primary.700'}
           cursor={'pointer'}
           _hover={{ textDecoration: 'underline' }}
-          onClick={() => setPageType('login')}
+          onClick={() => setPageType(LoginPageTypeEnum.passwordLogin)}
         >
           已有账号，去登录
         </Box>

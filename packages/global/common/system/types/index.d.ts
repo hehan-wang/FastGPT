@@ -1,3 +1,4 @@
+import { StandSubPlanLevelMapType, SubPlanType } from '../../../support/wallet/sub/type';
 import type {
   ChatModelItemType,
   FunctionModelItemType,
@@ -7,16 +8,14 @@ import type {
   WhisperModelType,
   ReRankModelItemType
 } from '../../../core/ai/model.d';
+import { SubTypeEnum } from '../../../support/wallet/sub/constants';
 
 /* fastgpt main */
 export type FastGPTConfigFileType = {
   feConfigs: FastGPTFeConfigsType;
   systemEnv: SystemEnvType;
-  chatModels: ChatModelItemType[];
-  qaModels: LLMModelItemType[];
-  cqModels: FunctionModelItemType[];
-  extractModels: FunctionModelItemType[];
-  qgModels: LLMModelItemType[];
+  subPlans?: SubPlanType;
+  llmModels: ChatModelItemType[];
   vectorModels: VectorModelItemType[];
   reRankModels: ReRankModelItemType[];
   audioSpeechModels: AudioSpeechModelType[];
@@ -31,6 +30,7 @@ export type FastGPTFeConfigsType = {
   show_pay?: boolean;
   show_openai_account?: boolean;
   show_promotion?: boolean;
+  show_team_chat?: boolean;
   hide_app_flow?: boolean;
   concatMd?: string;
   docUrl?: string;
@@ -39,9 +39,12 @@ export type FastGPTFeConfigsType = {
   systemTitle?: string;
   googleClientVerKey?: string;
   isPlus?: boolean;
+  show_phoneLogin?: boolean;
+  show_emailLogin?: boolean;
   oauth?: {
     github?: string;
     google?: string;
+    wechat?: string;
   };
   limit?: {
     exportDatasetLimitMinutes?: number;
@@ -51,10 +54,6 @@ export type FastGPTFeConfigsType = {
   favicon?: string;
   customApiDomain?: string;
   customSharePageDomain?: string;
-  subscription?: {
-    datasetStoreFreeSize?: number;
-    datasetStorePrice?: number;
-  };
 
   uploadFileMaxSize?: number;
 };
@@ -64,10 +63,12 @@ export type SystemEnvType = {
   vectorMaxProcess: number;
   qaMaxProcess: number;
   pgHNSWEfSearch: number;
+  oneapiUrl?: string;
+  chatApiKey?: string;
 };
 
-declare global {
-  var feConfigs: FastGPTFeConfigsType;
-  var systemEnv: SystemEnvType;
-  var systemInitd: boolean;
-}
+// declare global {
+//   var feConfigs: FastGPTFeConfigsType;
+//   var systemEnv: SystemEnvType;
+//   var systemInitd: boolean;
+// }

@@ -48,15 +48,17 @@ git clone git@github.com:<github_username>/FastGPT.git
 
 第一次开发，需要先部署数据库，建议本地开发可以随便找一台 2C2G 的轻量小数据库实践。数据库部署教程：[Docker 快速部署](/docs/development/docker/)。部署完了，可以本地访问其数据库。
 
+Mongo 数据库需要注意，需要注意在连接地址中增加 `directConnection=true` 参数，才能连接上副本集的数据库。
+
 ### 4. 初始配置
 
 以下文件均在 `projects/app` 路径下。
 
-**环境变量**
+**1. 环境变量**
 
 复制`.env.template`文件，在同级目录下生成一个`.env.local` 文件，修改`.env.local` 里内容才是有效的变量。变量说明见 .env.template
 
-**config 配置文件**
+**2. config 配置文件**
 
 复制 `data/config.json` 文件，生成一个 `data/config.local.json` 配置文件，具体配置参数说明，可参考 [config 配置说明](/docs/development/configuration)
 
@@ -71,7 +73,7 @@ git clone git@github.com:<github_username>/FastGPT.git
 ### 5. 运行
 
 ```bash
-# 给脚本代码执行权限
+# 给自动化脚本代码执行权限(非 linux 系统, 可以手动执行里面的 postinstall.sh 文件内容)
 chmod -R +x ./scripts/
 # 代码根目录下执行，会安装根 package、projects 和 packages 内所有依赖
 pnpm i
@@ -111,7 +113,22 @@ docker build -t dockername/fastgpt:tag --build-arg name=app --build-arg proxy=ta
 
 FastGPT 在`pnpm i`后会执行`postinstall`脚本，用于自动生成`ChakraUI`的`Type`。如果没有权限，可以先执行`chmod -R +x ./scripts/`，再执行`pnpm i`。
 
-### 加入社区
+### 长时间运行后崩溃
+
+似乎是由于 tiktoken 库的开发环境问题，生产环境中未遇到，暂时可忽略。
+
+### TypeError: Cannot read properties of null (reading 'useMemo' )
+
+删除所有的`node_modules`，用 Node18 重新 install 试试，可能最新的 Node 有问题。 本地开发流程：
+
+1. 根目录: `pnpm i`
+2. 复制 `config.json` -> `config.local.json`
+3. 复制 `.env.template` -> `.env.local`
+4. `cd projects/app`
+5. `pnpm dev`
+
+
+## 加入社区
 
 遇到困难了吗？有任何问题吗? 加入微信群与开发者和用户保持沟通。
 

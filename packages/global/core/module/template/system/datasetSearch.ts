@@ -3,25 +3,29 @@ import {
   FlowNodeOutputTypeEnum,
   FlowNodeTypeEnum
 } from '../../node/constant';
-import { FlowModuleTemplateType } from '../../type.d';
+import { FlowNodeTemplateType } from '../../type.d';
 import {
   ModuleIOValueTypeEnum,
   ModuleInputKeyEnum,
   ModuleOutputKeyEnum,
-  ModuleTemplateTypeEnum
+  FlowNodeTemplateTypeEnum
 } from '../../constants';
 import { Input_Template_Switch, Input_Template_UserChatInput } from '../input';
 import { Output_Template_Finish, Output_Template_UserChatInput } from '../output';
 import { DatasetSearchModeEnum } from '../../../dataset/constants';
 
-export const DatasetSearchModule: FlowModuleTemplateType = {
+export const Dataset_SEARCH_DESC =
+  '调用“语义检索”和“全文检索”能力，从“知识库”中查找可能与问题相关的参考内容';
+
+export const DatasetSearchModule: FlowNodeTemplateType = {
   id: FlowNodeTypeEnum.datasetSearchNode,
-  templateType: ModuleTemplateTypeEnum.functionCall,
+  templateType: FlowNodeTemplateTypeEnum.functionCall,
   flowType: FlowNodeTypeEnum.datasetSearchNode,
   avatar: '/imgs/module/db.png',
-  name: 'core.module.template.Dataset search',
-  intro: 'core.module.template.Dataset search intro',
+  name: '知识库搜索',
+  intro: Dataset_SEARCH_DESC,
   showStatus: true,
+  isTool: true,
   inputs: [
     Input_Template_Switch,
     {
@@ -37,22 +41,15 @@ export const DatasetSearchModule: FlowModuleTemplateType = {
     },
     {
       key: ModuleInputKeyEnum.datasetSimilarity,
-      type: FlowNodeInputTypeEnum.hidden,
+      type: FlowNodeInputTypeEnum.selectDatasetParamsModal,
       label: '',
       value: 0.4,
       valueType: ModuleIOValueTypeEnum.number,
-      min: 0,
-      max: 1,
-      step: 0.01,
-      markList: [
-        { label: '0', value: 0 },
-        { label: '1', value: 1 }
-      ],
       showTargetInApp: false,
       showTargetInPlugin: false
     },
     {
-      key: ModuleInputKeyEnum.datasetLimit,
+      key: ModuleInputKeyEnum.datasetMaxTokens,
       type: FlowNodeInputTypeEnum.hidden,
       label: '',
       value: 1500,
@@ -79,14 +76,35 @@ export const DatasetSearchModule: FlowModuleTemplateType = {
       value: false
     },
     {
-      key: ModuleInputKeyEnum.datasetParamsModal,
-      type: FlowNodeInputTypeEnum.selectDatasetParamsModal,
+      key: ModuleInputKeyEnum.datasetSearchUsingExtensionQuery,
+      type: FlowNodeInputTypeEnum.hidden,
       label: '',
-      valueType: ModuleIOValueTypeEnum.any,
+      valueType: ModuleIOValueTypeEnum.boolean,
+      showTargetInApp: false,
+      showTargetInPlugin: false,
+      value: true
+    },
+    {
+      key: ModuleInputKeyEnum.datasetSearchExtensionModel,
+      type: FlowNodeInputTypeEnum.hidden,
+      label: '',
+      valueType: ModuleIOValueTypeEnum.string,
       showTargetInApp: false,
       showTargetInPlugin: false
     },
-    Input_Template_UserChatInput
+    {
+      key: ModuleInputKeyEnum.datasetSearchExtensionBg,
+      type: FlowNodeInputTypeEnum.hidden,
+      label: '',
+      valueType: ModuleIOValueTypeEnum.string,
+      showTargetInApp: false,
+      showTargetInPlugin: false,
+      value: ''
+    },
+    {
+      ...Input_Template_UserChatInput,
+      toolDescription: '需要检索的内容'
+    }
   ],
   outputs: [
     Output_Template_UserChatInput,
@@ -106,12 +124,10 @@ export const DatasetSearchModule: FlowModuleTemplateType = {
     },
     {
       key: ModuleOutputKeyEnum.datasetQuoteQA,
-      label: 'core.module.output.label.Quote',
-      description: 'core.module.output.label.Quote intro',
+      label: 'core.module.Dataset quote.label',
       type: FlowNodeOutputTypeEnum.source,
       valueType: ModuleIOValueTypeEnum.datasetQuote,
       targets: []
-    },
-    Output_Template_Finish
+    }
   ]
 };

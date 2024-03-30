@@ -15,13 +15,13 @@ import {
 import { useImportStore, type FormType } from '../Provider';
 import { useTranslation } from 'next-i18next';
 import MyIcon from '@fastgpt/web/components/common/Icon';
-import { useRequest } from '@/web/common/hooks/useRequest';
-import { postCreateTrainingBill } from '@/web/support/wallet/bill/api';
+import { useRequest } from '@fastgpt/web/hooks/useRequest';
+import { postCreateTrainingUsage } from '@/web/support/wallet/usage/api';
 import { useDatasetStore } from '@/web/core/dataset/store/dataset';
 import { chunksUpload, fileCollectionCreate } from '@/web/core/dataset/utils';
 import { ImportSourceItemType } from '@/web/core/dataset/type';
 import { hashStr } from '@fastgpt/global/common/string/tools';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import { useRouter } from 'next/router';
 import { TabEnum } from '../../../index';
 import { postCreateDatasetLinkCollection, postDatasetCollection } from '@/web/core/dataset/api';
@@ -54,11 +54,6 @@ const Upload = ({ showPreviewChunks }: { showPreviewChunks: boolean }) => {
 
       // Batch create collection and upload chunks
       for await (const item of uploadList) {
-        const billId = await postCreateTrainingBill({
-          name: item.sourceName,
-          datasetId: datasetDetail._id
-        });
-
         // create collection
         const collectionId = await (async () => {
           const commonParams = {
@@ -125,6 +120,12 @@ const Upload = ({ showPreviewChunks }: { showPreviewChunks: boolean }) => {
         })();
 
         if (!collectionId) continue;
+        if (item.link) continue;
+
+        const billId = await postCreateTrainingUsage({
+          name: item.sourceName,
+          datasetId: datasetDetail._id
+        });
 
         // upload chunks
         const chunks = item.chunks;

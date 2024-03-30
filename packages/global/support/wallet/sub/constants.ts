@@ -3,33 +3,33 @@ export enum SubTypeEnum {
   extraDatasetSize = 'extraDatasetSize',
   extraPoints = 'extraPoints'
 }
+
 export const subTypeMap = {
   [SubTypeEnum.standard]: {
-    label: 'support.user.team.subscription.type.standard'
+    label: 'support.wallet.subscription.type.standard',
+    icon: 'support/account/plans'
   },
   [SubTypeEnum.extraDatasetSize]: {
-    label: 'support.user.team.subscription.type.extraDatasetSize'
+    label: 'support.wallet.subscription.type.extraDatasetSize',
+    icon: 'core/dataset/datasetLight'
   },
   [SubTypeEnum.extraPoints]: {
-    label: 'support.user.team.subscription.type.extraPoints'
+    label: 'support.wallet.subscription.type.extraPoints',
+    icon: 'core/chat/chatLight'
   }
 };
 
 export enum SubStatusEnum {
   active = 'active',
-  canceled = 'canceled'
+  expired = 'expired'
 }
 export const subStatusMap = {
   [SubStatusEnum.active]: {
-    label: 'support.user.team.subscription.status.active'
+    label: 'support.wallet.subscription.status.active'
   },
-  [SubStatusEnum.canceled]: {
-    label: 'support.user.team.subscription.status.canceled'
+  [SubStatusEnum.expired]: {
+    label: 'support.wallet.subscription.status.canceled'
   }
-};
-export const subSelectMap = {
-  true: SubStatusEnum.active,
-  false: SubStatusEnum.canceled
 };
 
 export enum SubModeEnum {
@@ -38,11 +38,11 @@ export enum SubModeEnum {
 }
 export const subModeMap = {
   [SubModeEnum.month]: {
-    label: 'support.user.team.subscription.mode.month',
+    label: 'support.wallet.subscription.mode.Month',
     durationMonth: 1
   },
   [SubModeEnum.year]: {
-    label: 'support.user.team.subscription.mode.year',
+    label: 'support.wallet.subscription.mode.Year',
     durationMonth: 12
   }
 };
@@ -56,18 +56,23 @@ export enum StandardSubLevelEnum {
 }
 export const standardSubLevelMap = {
   [StandardSubLevelEnum.free]: {
-    label: 'support.user.team.subscription.standardSubLevel.free'
+    label: 'support.wallet.subscription.standardSubLevel.free',
+    desc: 'support.wallet.subscription.standardSubLevel.free desc'
   },
   [StandardSubLevelEnum.experience]: {
-    label: 'support.user.team.subscription.standardSubLevel.experience'
+    label: 'support.wallet.subscription.standardSubLevel.experience',
+    desc: ''
   },
   [StandardSubLevelEnum.team]: {
-    label: 'support.user.team.subscription.standardSubLevel.team'
+    label: 'support.wallet.subscription.standardSubLevel.team',
+    desc: ''
   },
   [StandardSubLevelEnum.enterprise]: {
-    label: 'support.user.team.subscription.standardSubLevel.enterprise'
+    label: 'support.wallet.subscription.standardSubLevel.enterprise',
+    desc: ''
   },
   [StandardSubLevelEnum.custom]: {
-    label: 'support.user.team.subscription.standardSubLevel.custom'
+    label: 'support.wallet.subscription.standardSubLevel.custom',
+    desc: ''
   }
 };

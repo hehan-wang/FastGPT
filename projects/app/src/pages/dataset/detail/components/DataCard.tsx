@@ -15,7 +15,6 @@ import {
   DrawerContent,
   useDisclosure
 } from '@chakra-ui/react';
-import { usePagination } from '@/web/common/hooks/usePagination';
 import {
   getDatasetDataList,
   delOneDatasetDataById,
@@ -23,15 +22,15 @@ import {
 } from '@/web/core/dataset/api';
 import { DeleteIcon } from '@chakra-ui/icons';
 import { useQuery } from '@tanstack/react-query';
-import { useToast } from '@/web/common/hooks/useToast';
+import { useToast } from '@fastgpt/web/hooks/useToast';
 import { debounce } from 'lodash';
 import { getErrText } from '@fastgpt/global/common/error/utils';
-import { useConfirm } from '@/web/common/hooks/useConfirm';
+import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import MyInput from '@/components/MyInput';
-import { useLoading } from '@/web/common/hooks/useLoading';
+import { useLoading } from '@fastgpt/web/hooks/useLoading';
 import InputDataModal from '../components/InputDataModal';
 import RawSourceBox from '@/components/core/dataset/RawSourceBox';
 import type { DatasetDataListItemType } from '@/global/core/dataset/type.d';
@@ -48,6 +47,7 @@ import { formatTime2YMDHM } from '@fastgpt/global/common/string/time';
 import { formatFileSize } from '@fastgpt/global/common/file/tools';
 import { getFileAndOpen } from '@/web/core/dataset/utils';
 import MyTooltip from '@/components/MyTooltip';
+import { usePagination } from '@fastgpt/web/hooks/usePagination';
 
 const DataCard = () => {
   const BoxRef = useRef<HTMLDivElement>(null);
@@ -302,7 +302,10 @@ const DataCard = () => {
               >
                 <Flex zIndex={1} alignItems={'center'} justifyContent={'space-between'}>
                   <Box
-                    border={theme.borders.base}
+                    borderWidth={'1px'}
+                    borderColor={'primary.200'}
+                    bg={'primary.50'}
+                    color={'primary.600'}
                     px={2}
                     fontSize={'sm'}
                     mr={1}
@@ -310,7 +313,7 @@ const DataCard = () => {
                   >
                     # {item.chunkIndex ?? '-'}
                   </Box>
-                  <Box className={'textEllipsis'} color={'myGray.500'} fontSize={'xs'}>
+                  <Box className={'textEllipsis'} fontSize={'xs'}>
                     ID:{item._id}
                   </Box>
                 </Flex>

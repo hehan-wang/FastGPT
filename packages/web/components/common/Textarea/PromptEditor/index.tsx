@@ -1,17 +1,18 @@
 import { Button, ModalBody, ModalFooter, useDisclosure } from '@chakra-ui/react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { editorStateToText } from './utils';
 import Editor from './Editor';
 import MyModal from '../../MyModal';
 import { useTranslation } from 'next-i18next';
 import { $getRoot, EditorState, type LexicalEditor } from 'lexical';
-import { PickerMenuItemType } from './type.d';
+import { EditorVariablePickerType } from './type.d';
 import { useCallback, useTransition } from 'react';
 
 const PromptEditor = ({
   showOpenModal = true,
+  showResize = true,
   variables = [],
-  defaultValue,
+  value,
   onChange,
   onBlur,
   h,
@@ -19,8 +20,9 @@ const PromptEditor = ({
   title
 }: {
   showOpenModal?: boolean;
-  variables?: PickerMenuItemType[];
-  defaultValue?: string;
+  showResize?: boolean;
+  variables?: EditorVariablePickerType[];
+  value?: string;
   onChange?: (text: string) => void;
   onBlur?: (text: string) => void;
   h?: number;
@@ -28,14 +30,15 @@ const PromptEditor = ({
   title?: string;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
   const [, startSts] = useTransition();
-
   const { t } = useTranslation();
 
-  const onChangeInput = useCallback((editorState: EditorState) => {
-    const text = editorState.read(() => $getRoot().getTextContent());
-    const formatValue = text.replaceAll('\n\n', '\n').replaceAll('}}{{', '}} {{');
+  const onChangeInput = useCallback((editorState: EditorState, editor: LexicalEditor) => {
+    const stringifiedEditorState = JSON.stringify(editorState.toJSON());
+    const parsedEditorState = editor.parseEditorState(stringifiedEditorState);
+    const editorStateTextString = parsedEditorState.read(() => $getRoot().getTextContent());
+
+    const formatValue = editorStateTextString.replaceAll('\n\n', '\n').replaceAll('}}{{', '}} {{');
     onChange?.(formatValue);
   }, []);
   const onBlurInput = useCallback((editor: LexicalEditor) => {
@@ -48,12 +51,12 @@ const PromptEditor = ({
   return (
     <>
       <Editor
-        showResize
+        showResize={showResize}
         showOpenModal={showOpenModal}
         onOpenModal={onOpen}
         variables={variables}
         h={h}
-        defaultValue={defaultValue}
+        value={value}
         onChange={onChangeInput}
         onBlur={onBlurInput}
         placeholder={placeholder}
@@ -65,7 +68,7 @@ const PromptEditor = ({
             showResize
             showOpenModal={false}
             variables={variables}
-            defaultValue={defaultValue}
+            value={value}
             onChange={onChangeInput}
             onBlur={onBlurInput}
             placeholder={placeholder}
