@@ -34,6 +34,7 @@ import ParentPaths from '@/components/common/ParentPaths';
 import DatasetTypeTag from '@/components/core/dataset/DatasetTypeTag';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import { getErrText } from '@fastgpt/global/common/error/utils';
+import { xmlDownloadFetch } from '@/web/common/api/xmlFetch';
 
 const CreateModal = dynamic(() => import('./component/CreateModal'), { ssr: false });
 const MoveModal = dynamic(() => import('./component/MoveModal'), { ssr: false });
@@ -90,12 +91,17 @@ const Kb = () => {
     mutationFn: async (dataset: DatasetItemType) => {
       setLoading(true);
       await checkTeamExportDatasetLimit(dataset._id);
-      const a = document.createElement('a');
-      a.href = `/api/core/dataset/exportAll?datasetId=${dataset._id}`;
-      a.download = `${dataset.name}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+
+      await xmlDownloadFetch({
+        url: `/api/core/dataset/exportAll?datasetId=${dataset._id}`,
+        filename: `${dataset.name}.csv`
+      });
+    },
+    onSuccess() {
+      toast({
+        status: 'success',
+        title: t('core.dataset.Start export')
+      });
     },
     onSettled() {
       setLoading(false);

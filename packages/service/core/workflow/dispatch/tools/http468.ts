@@ -10,6 +10,7 @@ import { valueTypeFormat } from '../utils';
 import { SERVICE_LOCAL_HOST } from '../../../../common/system/tools';
 import { addLog } from '../../../../common/system/log';
 import { DispatchNodeResultType } from '@fastgpt/global/core/module/runtime/type';
+import { getErrText } from '@fastgpt/global/common/error/utils';
 
 type PropsArrType = {
   key: string;
@@ -61,7 +62,7 @@ export const dispatchHttp468Request = async (props: HttpRequestProps): Promise<H
     chatId,
     responseChatItemId,
     ...variables,
-    histories: histories.slice(0, 10),
+    histories: histories.slice(-10),
     ...body
   };
 
@@ -139,7 +140,8 @@ export const dispatchHttp468Request = async (props: HttpRequestProps): Promise<H
         body: Object.keys(requestBody).length > 0 ? requestBody : undefined,
         headers: Object.keys(headers).length > 0 ? headers : undefined,
         httpResult: { error: formatHttpError(error) }
-      }
+      },
+      [ModuleOutputKeyEnum.httpRawResponse]: getErrText(error)
     };
   }
 };
@@ -165,6 +167,7 @@ async function fetchData({
       'Content-Type': 'application/json',
       ...headers
     },
+    timeout: 120000,
     params: params,
     data: ['POST', 'PUT', 'PATCH'].includes(method) ? body : undefined
   });

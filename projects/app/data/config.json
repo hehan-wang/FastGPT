@@ -1,4 +1,7 @@
 {
+  "feConfigs": {
+    "lafEnv": "https://laf.dev"
+  },
   "systemEnv": {
     "openapiPrefix": "fastgpt",
     "vectorMaxProcess": 15,
@@ -82,7 +85,7 @@
       "name": "Embedding-2",
       "avatar": "/imgs/model/openai.svg",
       "charsPointsPrice": 0,
-      "defaultToken": 700,
+      "defaultToken": 512,
       "maxToken": 3000,
       "weight": 100,
       "dbConfig": {},

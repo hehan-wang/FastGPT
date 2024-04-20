@@ -14,7 +14,7 @@ export async function postForm2Modules(data: AppSimpleEditFormType) {
   function userGuideTemplate(formData: AppSimpleEditFormType): ModuleItemType[] {
     return [
       {
-        name: 'core.module.template.User guide',
+        name: '系统配置',
         flowType: FlowNodeTypeEnum.userGuide,
         inputs: [
           {
@@ -38,8 +38,14 @@ export async function postForm2Modules(data: AppSimpleEditFormType) {
           {
             key: ModuleInputKeyEnum.tts,
             type: FlowNodeInputTypeEnum.hidden,
-            label: 'core.app.TTS',
+            label: '',
             value: formData.userGuide.tts
+          },
+          {
+            key: ModuleInputKeyEnum.whisper,
+            type: FlowNodeInputTypeEnum.hidden,
+            label: '',
+            value: formData.userGuide.whisper
           }
         ],
         outputs: [],

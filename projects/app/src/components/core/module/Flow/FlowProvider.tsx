@@ -166,7 +166,7 @@ export const FlowProvider = ({
   }, [nodes]);
 
   const onFixView = useCallback(() => {
-    const btn = document.querySelector('.react-flow__controls-fitview') as HTMLButtonElement;
+    const btn = document.querySelector('.custom-workflow-fix_view') as HTMLButtonElement;
 
     setTimeout(() => {
       btn && btn.click();
@@ -212,9 +212,6 @@ export const FlowProvider = ({
 
         if (source?.flowType === FlowNodeTypeEnum.classifyQuestion && !type) {
           return ModuleIOValueTypeEnum.boolean;
-        }
-        if (source?.flowType === FlowNodeTypeEnum.tools) {
-          return ModuleIOValueTypeEnum.tools;
         }
         if (source?.flowType === FlowNodeTypeEnum.pluginInput) {
           return source?.inputs.find((input) => input.key === connect.sourceHandle)?.valueType;

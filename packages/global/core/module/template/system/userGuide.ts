@@ -1,6 +1,5 @@
 import { FlowNodeInputTypeEnum, FlowNodeTypeEnum } from '../../node/constant';
 import { FlowNodeTemplateType } from '../../type.d';
-import { userGuideTip } from '../tip';
 import {
   ModuleIOValueTypeEnum,
   ModuleInputKeyEnum,
@@ -12,8 +11,8 @@ export const UserGuideModule: FlowNodeTemplateType = {
   templateType: FlowNodeTemplateTypeEnum.userGuide,
   flowType: FlowNodeTypeEnum.userGuide,
   avatar: '/imgs/module/userGuide.png',
-  name: '全局配置',
-  intro: userGuideTip,
+  name: '系统配置',
+  intro: '可以配置应用的系统参数。',
   inputs: [
     {
       key: ModuleInputKeyEnum.welcomeText,
@@ -42,6 +41,14 @@ export const UserGuideModule: FlowNodeTemplateType = {
     },
     {
       key: ModuleInputKeyEnum.tts,
+      type: FlowNodeInputTypeEnum.hidden,
+      valueType: ModuleIOValueTypeEnum.any,
+      label: '',
+      showTargetInApp: false,
+      showTargetInPlugin: false
+    },
+    {
+      key: ModuleInputKeyEnum.whisper,
       type: FlowNodeInputTypeEnum.hidden,
       valueType: ModuleIOValueTypeEnum.any,
       label: '',

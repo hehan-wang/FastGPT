@@ -19,6 +19,9 @@ llm模型全部合并
 
 ```json
 {
+  "feConfigs": {
+    "lafEnv": "https://laf.dev" // laf环境。 https://laf.run （杭州阿里云） ,或者私有化的laf环境。如果使用 Laf openapi 功能，需要最新版的 laf 。
+  },
   "systemEnv": {
     "vectorMaxProcess": 15,
     "qaMaxProcess": 15,
@@ -153,7 +156,7 @@ llm模型全部合并
 
 请使用 4.6.6-alpha 以上版本，配置文件中的 `reRankModels` 为重排模型，虽然是数组，不过目前仅有第1个生效。
 
-1. [部署 ReRank 模型](/docs/development/custom-models/reranker/)
+1. [部署 ReRank 模型](/docs/development/custom-models/bge-rerank/)
 1. 找到 FastGPT 的配置文件中的 `reRankModels`， 4.6.6 以前是 `ReRankModels`。
 2. 修改对应的值：（记得去掉注释）
 
@@ -164,7 +167,7 @@ llm模型全部合并
             "model": "bge-reranker-base", // 随意
             "name": "检索重排-base", // 随意
             "charsPointsPrice": 0,
-            "requestUrl": "{{host}}/api/v1/rerank",
+            "requestUrl": "{{host}}/v1/rerank",
             "requestAuth": "安全凭证，已自动补 Bearer"
         }
     ]
