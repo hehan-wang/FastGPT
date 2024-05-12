@@ -30,10 +30,10 @@ export const defaultForm: EditFormType = {
   type: PluginTypeEnum.custom,
   modules: [
     {
-      moduleId: nanoid(),
-      name: '定义插件输入',
-      avatar: '/imgs/module/input.png',
-      flowType: 'pluginInput',
+      nodeId: nanoid(),
+      name: '自定义插件输入',
+      avatar: '/imgs/workflow/input.png',
+      flowNodeType: 'pluginInput',
       showStatus: false,
       position: {
         x: 616.4226348688949,
@@ -43,10 +43,10 @@ export const defaultForm: EditFormType = {
       outputs: []
     },
     {
-      moduleId: nanoid(),
-      name: '定义插件输出',
-      avatar: '/imgs/module/output.png',
-      flowType: 'pluginOutput',
+      nodeId: nanoid(),
+      name: '自定义插件输出',
+      avatar: '/imgs/workflow/output.png',
+      flowNodeType: 'pluginOutput',
       showStatus: false,
       position: {
         x: 1607.7142331269126,

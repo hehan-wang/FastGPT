@@ -1,8 +1,8 @@
 import React, { useContext, createContext, useState, useMemo, useEffect, useCallback } from 'react';
 import { useAudioPlay } from '@/web/common/utils/voice';
 import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
-import { ModuleItemType } from '@fastgpt/global/core/module/type';
-import { splitGuideModule } from '@fastgpt/global/core/module/utils';
+import { StoreNodeItemType } from '@fastgpt/global/core/workflow/type/index.d';
+import { splitGuideModule } from '@fastgpt/global/core/workflow/utils';
 import {
   AppTTSConfigType,
   AppWhisperConfigType,
@@ -12,7 +12,7 @@ import { ChatSiteItemType } from '@fastgpt/global/core/chat/type';
 
 type useChatStoreType = OutLinkChatAuthProps & {
   welcomeText: string;
-  variableModules: VariableItemType[];
+  variableNodes: VariableItemType[];
   questionGuide: boolean;
   ttsConfig: AppTTSConfigType;
   whisperConfig: AppWhisperConfigType;
@@ -41,7 +41,7 @@ type useChatStoreType = OutLinkChatAuthProps & {
 };
 const StateContext = createContext<useChatStoreType>({
   welcomeText: '',
-  variableModules: [],
+  variableNodes: [],
   questionGuide: false,
   ttsConfig: {
     type: 'none',
@@ -91,7 +91,7 @@ const StateContext = createContext<useChatStoreType>({
 });
 
 export type ChatProviderProps = OutLinkChatAuthProps & {
-  userGuideModule?: ModuleItemType;
+  userGuideModule?: StoreNodeItemType;
 
   // not chat test params
   chatId?: string;
@@ -110,7 +110,7 @@ const Provider = ({
 }: ChatProviderProps) => {
   const [chatHistories, setChatHistories] = useState<ChatSiteItemType[]>([]);
 
-  const { welcomeText, variableModules, questionGuide, ttsConfig, whisperConfig } = useMemo(
+  const { welcomeText, variableNodes, questionGuide, ttsConfig, whisperConfig } = useMemo(
     () => splitGuideModule(userGuideModule),
     [userGuideModule]
   );
@@ -150,7 +150,7 @@ const Provider = ({
     teamId,
     teamToken,
     welcomeText,
-    variableModules,
+    variableNodes,
     questionGuide,
     ttsConfig,
     whisperConfig,

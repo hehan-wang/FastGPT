@@ -1,9 +1,9 @@
-import { SseResponseEventEnum } from '@fastgpt/global/core/module/runtime/constants';
+import { SseResponseEventEnum } from '@fastgpt/global/core/workflow/runtime/constants';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import type { ChatHistoryItemResType } from '@fastgpt/global/core/chat/type.d';
 import type { StartChatFnProps } from '@/components/ChatBox/type.d';
 import { getToken } from '@/web/support/user/auth';
-import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/module/runtime/constants';
+import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/workflow/runtime/constants';
 import dayjs from 'dayjs';
 import {
   // refer to https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web
@@ -22,6 +22,7 @@ type StreamFetchProps = {
 type StreamResponseType = {
   responseText: string;
   [DispatchNodeResponseKeyEnum.nodeResponse]: ChatHistoryItemResType[];
+  newVariables: Record<string, any>;
 };
 class FatalError extends Error {}
 
@@ -50,6 +51,7 @@ export const streamFetch = ({
     )[] = [];
     let errMsg: string | undefined;
     let responseData: ChatHistoryItemResType[] = [];
+    let newVariables: Record<string, any> = {};
     let finished = false;
 
     const finish = () => {
@@ -57,6 +59,7 @@ export const streamFetch = ({
         return failedFinish();
       }
       return resolve({
+        newVariables,
         responseText,
         responseData
       });
@@ -109,7 +112,7 @@ export const streamFetch = ({
     try {
       // auto complete variables
       const variables = data?.variables || {};
-      variables.cTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
+      variables.cTime = dayjs().format('YYYY-MM-DD HH:mm:ss dddd');
 
       const requestData = {
         method: 'POST',
@@ -198,6 +201,8 @@ export const streamFetch = ({
             });
           } else if (event === SseResponseEventEnum.flowResponses && Array.isArray(parseJson)) {
             responseData = parseJson;
+          } else if (event === SseResponseEventEnum.updateVariables) {
+            newVariables = parseJson;
           } else if (event === SseResponseEventEnum.error) {
             if (parseJson.statusText === TeamErrEnum.aiPointsNotEnough) {
               useSystemStore.getState().setIsNotSufficientModal(true);

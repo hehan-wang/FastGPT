@@ -32,7 +32,7 @@ import type { ChatHistoryItemType } from '@fastgpt/global/core/chat/type.d';
 import { getChatTitleFromChatMessage } from '@fastgpt/global/core/chat/utils';
 import { ChatStatusEnum } from '@fastgpt/global/core/chat/constants';
 import { getErrText } from '@fastgpt/global/common/error/utils';
-import MyBox from '@/components/common/MyBox';
+import MyBox from '@fastgpt/web/components/common/MyBox';
 import SliderApps from './components/SliderApps';
 import { GPTMessages2Chats } from '@fastgpt/global/core/chat/adapt';
 
@@ -79,7 +79,7 @@ const OutLink = () => {
       const prompts = messages.slice(-2);
       const completionChatId = chatId ? chatId : nanoid();
 
-      const { responseText, responseData } = await streamFetch({
+      const { responseText, responseData, newVariables } = await streamFetch({
         data: {
           messages: prompts,
           variables: {
@@ -135,7 +135,7 @@ const OutLink = () => {
         history: ChatBoxRef.current?.getChatHistories() || state.history
       }));
 
-      return { responseText, responseData, isNewChat: forbidRefresh.current };
+      return { responseText, responseData, isNewChat: forbidRefresh.current, newVariables };
     },
     [appId, teamToken, chatId, histories, pushHistory, router, setChatData, teamId, updateHistory]
   );
@@ -382,7 +382,7 @@ const OutLink = () => {
 export async function getServerSideProps(context: any) {
   return {
     props: {
-      ...(await serviceSideProps(context))
+      ...(await serviceSideProps(context, ['file']))
     }
   };
 }

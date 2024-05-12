@@ -5,7 +5,7 @@ import React, { Dispatch, useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { Box } from '@chakra-ui/react';
 import ParentPaths from '@/components/common/ParentPaths';
-import MyBox from '@/components/common/MyBox';
+import MyBox from '@fastgpt/web/components/common/MyBox';
 
 type PathItemType = {
   parentId: string;
@@ -33,7 +33,7 @@ const DatasetSelectContainer = ({
 
   return (
     <MyModal
-      iconSrc="/imgs/module/db.png"
+      iconSrc="/imgs/workflow/db.png"
       title={
         <Box fontWeight={'normal'}>
           <ParentPaths

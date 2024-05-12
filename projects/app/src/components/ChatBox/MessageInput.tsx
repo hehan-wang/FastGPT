@@ -55,6 +55,8 @@ const MessageInput = ({
   const { t } = useTranslation();
 
   const havInput = !!inputValue || fileList.length > 0;
+  const hasFileUploading = fileList.some((item) => !item.url);
+  const canSendMessage = havInput && !hasFileUploading;
 
   /* file selector and upload */
   const { File, onOpen: onOpenSelectFile } = useSelectFile({
@@ -69,9 +71,9 @@ const MessageInput = ({
           const url = await compressImgFileAndUpload({
             type: MongoImageTypeEnum.chatImage,
             file: file.rawFile,
-            maxW: 4329,
-            maxH: 4329,
-            maxSize: 1024 * 1024 * 5,
+            maxW: 4320,
+            maxH: 4320,
+            maxSize: 1024 * 1024 * 16,
             // 7 day expired.
             expiredTime: addDays(new Date(), 7),
             shareId,
@@ -142,7 +144,8 @@ const MessageInput = ({
   );
 
   /* on send */
-  const handleSend = useCallback(async () => {
+  const handleSend = async () => {
+    if (!canSendMessage) return;
     const textareaValue = TextareaDom.current?.value || '';
 
     onSendMessage({
@@ -150,7 +153,7 @@ const MessageInput = ({
       files: fileList
     });
     replaceFile([]);
-  }, [TextareaDom, fileList, onSendMessage, replaceFile]);
+  };
 
   /* whisper init */
   const {
@@ -357,9 +360,16 @@ const MessageInput = ({
               // enter send.(pc or iframe && enter and unPress shift)
               const isEnter = e.keyCode === 13;
               if (isEnter && TextareaDom.current && (e.ctrlKey || e.altKey)) {
-                TextareaDom.current.value += '\n';
+                // Add a new line
+                const index = TextareaDom.current.selectionStart;
+                const val = TextareaDom.current.value;
+                TextareaDom.current.value = `${val.slice(0, index)}\n${val.slice(index)}`;
+                TextareaDom.current.selectionStart = index + 1;
+                TextareaDom.current.selectionEnd = index + 1;
+
                 TextareaDom.current.style.height = textareaMinH;
                 TextareaDom.current.style.height = `${TextareaDom.current.scrollHeight}px`;
+
                 return;
               }
 
@@ -459,16 +469,20 @@ const MessageInput = ({
                 h={['28px', '32px']}
                 w={['28px', '32px']}
                 borderRadius={'md'}
-                bg={isSpeaking || isChatting ? '' : !havInput ? '#E5E5E5' : 'primary.500'}
+                bg={
+                  isSpeaking || isChatting
+                    ? ''
+                    : !havInput || hasFileUploading
+                    ? '#E5E5E5'
+                    : 'primary.500'
+                }
                 cursor={havInput ? 'pointer' : 'not-allowed'}
                 lineHeight={1}
                 onClick={() => {
                   if (isChatting) {
                     return onStop();
                   }
-                  if (havInput) {
-                    return handleSend();
-                  }
+                  return handleSend();
                 }}
               >
                 {isChatting ? (

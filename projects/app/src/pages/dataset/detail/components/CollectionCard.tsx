@@ -34,10 +34,10 @@ import dayjs from 'dayjs';
 import { useRequest } from '@fastgpt/web/hooks/useRequest';
 import { useRouter } from 'next/router';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import MyMenu from '@/components/MyMenu';
+import MyMenu from '@fastgpt/web/components/common/MyMenu';
 import { useEditTitle } from '@/web/common/hooks/useEditTitle';
 import type { DatasetCollectionsListItemType } from '@/global/core/dataset/type.d';
-import EmptyTip from '@/components/EmptyTip';
+import EmptyTip from '@fastgpt/web/components/common/EmptyTip';
 import {
   DatasetCollectionTypeEnum,
   TrainingModeEnum,
@@ -60,7 +60,7 @@ import { TeamMemberRoleEnum } from '@fastgpt/global/support/user/team/constant';
 import { useDatasetStore } from '@/web/core/dataset/store/dataset';
 import { DatasetSchemaType } from '@fastgpt/global/core/dataset/type';
 import { DatasetCollectionSyncResultEnum } from '@fastgpt/global/core/dataset/constants';
-import MyBox from '@/components/common/MyBox';
+import MyBox from '@fastgpt/web/components/common/MyBox';
 import { usePagination } from '@fastgpt/web/hooks/usePagination';
 import { ImportDataSourceEnum } from '@fastgpt/global/core/dataset/constants';
 

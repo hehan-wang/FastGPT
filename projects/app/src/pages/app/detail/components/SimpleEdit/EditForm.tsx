@@ -1,12 +1,10 @@
-import React, { useMemo, useState, useTransition } from 'react';
+import React, { useEffect, useMemo, useTransition } from 'react';
 import { Box, Flex, Grid, BoxProps, useTheme, useDisclosure, Button } from '@chakra-ui/react';
-import { useQuery } from '@tanstack/react-query';
 import { AddIcon, QuestionOutlineIcon, SmallAddIcon } from '@chakra-ui/icons';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useFieldArray, UseFormReturn } from 'react-hook-form';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import { appModules2Form, getDefaultAppForm } from '@fastgpt/global/core/app/utils';
 import type { AppSimpleEditFormType } from '@fastgpt/global/core/app/type.d';
-import { welcomeTextTip } from '@fastgpt/global/core/module/template/tip';
+import { welcomeTextTip } from '@fastgpt/global/core/workflow/template/tip';
 import { useRequest } from '@fastgpt/web/hooks/useRequest';
 import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 import { useRouter } from 'next/router';
@@ -14,7 +12,7 @@ import { useTranslation } from 'next-i18next';
 import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import { useDatasetStore } from '@/web/core/dataset/store/dataset';
 import { useAppStore } from '@/web/core/app/store/useAppStore';
-import { postForm2Modules } from '@/web/core/app/utils';
+import { form2AppWorkflow } from '@/web/core/app/utils';
 
 import dynamic from 'next/dynamic';
 import MyTooltip from '@/components/MyTooltip';
@@ -23,15 +21,18 @@ import MyIcon from '@fastgpt/web/components/common/Icon';
 import VariableEdit from '@/components/core/app/VariableEdit';
 import MyTextarea from '@/components/common/Textarea/MyTextarea/index';
 import PromptEditor from '@fastgpt/web/components/common/Textarea/PromptEditor';
-import { formatEditorVariablePickerIcon } from '@fastgpt/global/core/module/utils';
+import { formatEditorVariablePickerIcon } from '@fastgpt/global/core/workflow/utils';
 import SearchParamsTip from '@/components/core/dataset/SearchParamsTip';
 import SettingLLMModel from '@/components/core/ai/SettingLLMModel';
-import { SettingAIDataType } from '@fastgpt/global/core/module/node/type';
+import type { SettingAIDataType } from '@fastgpt/global/core/app/type.d';
 import DeleteIcon, { hoverDeleteStyles } from '@fastgpt/web/components/common/Icon/delete';
 import { TTSTypeEnum } from '@/constants/app';
+import { getSystemVariables } from '@/web/core/app/utils';
+import { useUpdate } from 'ahooks';
+import { useI18n } from '@/web/context/I18n';
 
-const DatasetSelectModal = dynamic(() => import('@/components/core/module/DatasetSelectModal'));
-const DatasetParamsModal = dynamic(() => import('@/components/core/module/DatasetParamsModal'));
+const DatasetSelectModal = dynamic(() => import('@/components/core/app/DatasetSelectModal'));
+const DatasetParamsModal = dynamic(() => import('@/components/core/app/DatasetParamsModal'));
 const ToolSelectModal = dynamic(() => import('./ToolSelectModal'));
 const TTSSelect = dynamic(() => import('@/components/core/app/TTSSelect'));
 const QGSwitch = dynamic(() => import('@/components/core/app/QGSwitch'));
@@ -50,31 +51,32 @@ const LabelStyles: BoxProps = {
 };
 
 const EditForm = ({
+  editForm,
   divRef,
   isSticky
 }: {
+  editForm: UseFormReturn<AppSimpleEditFormType, any>;
   divRef: React.RefObject<HTMLDivElement>;
   isSticky: boolean;
 }) => {
   const theme = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
-  const { appDetail, updateAppDetail } = useAppStore();
-  const { loadAllDatasets, allDatasets } = useDatasetStore();
-  const { isPc, llmModelList } = useSystemStore();
-  const [refresh, setRefresh] = useState(false);
-  const [, startTst] = useTransition();
+  const { appT } = useI18n();
 
-  const { setValue, getValues, reset, handleSubmit, control, watch } =
-    useForm<AppSimpleEditFormType>({
-      defaultValues: getDefaultAppForm()
-    });
+  const { publishApp, appDetail } = useAppStore();
+
+  const { allDatasets } = useDatasetStore();
+  const { llmModelList } = useSystemStore();
+  const [, startTst] = useTransition();
+  const refresh = useUpdate();
+
+  const { setValue, getValues, handleSubmit, control, watch } = editForm;
 
   const { fields: datasets, replace: replaceKbList } = useFieldArray({
     control,
     name: 'dataset.datasets'
   });
-  const selectedTools = watch('selectedTools');
 
   const {
     isOpen: isOpenDatasetSelect,
@@ -100,8 +102,16 @@ const EditForm = ({
   const selectLLMModel = watch('aiSettings.model');
   const datasetSearchSetting = watch('dataset');
   const variables = watch('userGuide.variables');
-  const formatVariables = useMemo(() => formatEditorVariablePickerIcon(variables), [variables]);
+
+  const formatVariables = useMemo(
+    () => formatEditorVariablePickerIcon([...getSystemVariables(t), ...variables]),
+    [t, variables]
+  );
   const searchMode = watch('dataset.searchMode');
+  const tts = getValues('userGuide.tts');
+  const whisperConfig = getValues('userGuide.whisper');
+  const postQuestionGuide = getValues('userGuide.questionGuide');
+  const selectedTools = watch('selectedTools');
 
   const selectDatasets = useMemo(
     () => allDatasets.filter((item) => datasets.find((dataset) => dataset.datasetId === item._id)),
@@ -113,35 +123,29 @@ const EditForm = ({
   }, [selectLLMModel, llmModelList]);
 
   /* on save app */
-  const { mutate: onSubmitSave, isLoading: isSaving } = useRequest({
+  const { mutate: onSubmitPublish, isLoading: isSaving } = useRequest({
     mutationFn: async (data: AppSimpleEditFormType) => {
-      const modules = await postForm2Modules(data);
+      const { nodes, edges } = form2AppWorkflow(data);
 
-      await updateAppDetail(appDetail._id, {
-        modules,
-        type: AppTypeEnum.simple,
-        permission: undefined
+      await publishApp(appDetail._id, {
+        nodes,
+        edges,
+        type: AppTypeEnum.simple
       });
     },
     successToast: t('common.Save Success'),
     errorToast: t('common.Save Failed')
   });
 
-  useQuery(
-    ['init', appDetail],
-    () => {
-      const formatVal = appModules2Form({
-        modules: appDetail.modules
-      });
-      reset(formatVal);
-      setRefresh(!refresh);
-      return formatVal;
-    },
-    {
-      enabled: !!appDetail._id
-    }
-  );
-  useQuery(['loadAllDatasets'], loadAllDatasets);
+  useEffect(() => {
+    const wat = watch((data) => {
+      refresh();
+    });
+
+    return () => {
+      wat.unsubscribe();
+    };
+  }, []);
 
   return (
     <Box>
@@ -172,16 +176,23 @@ const EditForm = ({
         <Button
           isLoading={isSaving}
           size={['sm', 'md']}
+          leftIcon={
+            appDetail.type === AppTypeEnum.simple ? (
+              <MyIcon name={'common/publishFill'} w={['14px', '16px']} />
+            ) : undefined
+          }
           variant={appDetail.type === AppTypeEnum.simple ? 'primary' : 'whitePrimary'}
           onClick={() => {
             if (appDetail.type !== AppTypeEnum.simple) {
-              openConfirmSave(handleSubmit((data) => onSubmitSave(data)))();
+              openConfirmSave(handleSubmit((data) => onSubmitPublish(data)))();
             } else {
-              handleSubmit((data) => onSubmitSave(data))();
+              handleSubmit((data) => onSubmitPublish(data))();
             }
           }}
         >
-          {isPc ? t('core.app.Save and preview') : t('common.Save')}
+          {appDetail.type !== AppTypeEnum.simple
+            ? t('core.app.Change to simple mode')
+            : t('core.app.Publish')}
         </Button>
       </Flex>
 
@@ -192,7 +203,7 @@ const EditForm = ({
             <Flex alignItems={'center'}>
               <MyIcon name={'core/app/simpleMode/ai'} w={'20px'} />
               <Box ml={2} flex={1}>
-                {t('app.AI Settings')}
+                {appT('AI Settings')}
               </Box>
             </Flex>
             <Flex alignItems={'center'} mt={5}>
@@ -267,7 +278,7 @@ const EditForm = ({
                 {t('common.Params')}
               </Button>
             </Flex>
-            {getValues('dataset.datasets').length > 0 && (
+            {datasetSearchSetting.datasets?.length > 0 && (
               <Box my={3}>
                 <SearchParamsTip
                   searchMode={searchMode}
@@ -377,7 +388,6 @@ const EditForm = ({
               variables={variables}
               onChange={(e) => {
                 setValue('userGuide.variables', e);
-                setRefresh(!refresh);
               }}
             />
           </Box>
@@ -406,10 +416,9 @@ const EditForm = ({
           {/* tts */}
           <Box {...BoxStyles}>
             <TTSSelect
-              value={getValues('userGuide.tts')}
+              value={tts}
               onChange={(e) => {
                 setValue('userGuide.tts', e);
-                setRefresh((state) => !state);
               }}
             />
           </Box>
@@ -417,11 +426,10 @@ const EditForm = ({
           {/* whisper */}
           <Box {...BoxStyles}>
             <WhisperConfig
-              isOpenAudio={getValues('userGuide.tts').type !== TTSTypeEnum.none}
-              value={getValues('userGuide.whisper')}
+              isOpenAudio={tts.type !== TTSTypeEnum.none}
+              value={whisperConfig}
               onChange={(e) => {
                 setValue('userGuide.whisper', e);
-                setRefresh((state) => !state);
               }}
             />
           </Box>
@@ -429,12 +437,10 @@ const EditForm = ({
           {/* question guide */}
           <Box {...BoxStyles} borderBottom={'none'}>
             <QGSwitch
-              isChecked={getValues('userGuide.questionGuide')}
+              isChecked={postQuestionGuide}
               size={'lg'}
               onChange={(e) => {
-                const value = e.target.checked;
-                setValue('userGuide.questionGuide', value);
-                setRefresh((state) => !state);
+                setValue('userGuide.questionGuide', e.target.checked);
               }}
             />
           </Box>
@@ -463,19 +469,19 @@ const EditForm = ({
               ...getValues('dataset'),
               ...e
             });
-
-            setRefresh((state) => !state);
           }}
         />
       )}
       {isOpenToolsSelect && (
         <ToolSelectModal
           selectedTools={selectedTools}
-          onAddTool={(e) => setValue('selectedTools', [...selectedTools, e])}
+          onAddTool={(e) => {
+            setValue('selectedTools', [...selectedTools, e]);
+          }}
           onRemoveTool={(e) => {
             setValue(
               'selectedTools',
-              selectedTools.filter((item) => item.id !== e.id)
+              selectedTools.filter((item) => item.pluginId !== e.pluginId)
             );
           }}
           onClose={onCloseToolsSelect}

@@ -3,13 +3,17 @@ import { authApp } from '@fastgpt/service/support/permission/auth/app';
 import { authCert } from '@fastgpt/service/support/permission/auth/common';
 import { sseErrRes, jsonRes } from '@fastgpt/service/common/response';
 import { addLog } from '@fastgpt/service/common/system/log';
-import { withNextCors } from '@fastgpt/service/common/middle/cors';
 import { ChatRoleEnum, ChatSourceEnum } from '@fastgpt/global/core/chat/constants';
-import { SseResponseEventEnum } from '@fastgpt/global/core/module/runtime/constants';
+import { SseResponseEventEnum } from '@fastgpt/global/core/workflow/runtime/constants';
 import { dispatchWorkFlow } from '@fastgpt/service/core/workflow/dispatch';
 import type { ChatCompletionCreateParams } from '@fastgpt/global/core/ai/type.d';
 import type { ChatCompletionMessageParam } from '@fastgpt/global/core/ai/type.d';
-import { textAdaptGptResponse } from '@fastgpt/global/core/module/runtime/utils';
+import {
+  getDefaultEntryNodeIds,
+  initWorkflowEdgeStatus,
+  storeNodes2RuntimeNodes,
+  textAdaptGptResponse
+} from '@fastgpt/global/core/workflow/runtime/utils';
 import { GPTMessages2Chats, chatValue2RuntimePrompt } from '@fastgpt/global/core/chat/adapt';
 import { getChatItems } from '@fastgpt/service/core/chat/controller';
 import { saveChat } from '@/service/utils/chat/saveChat';
@@ -20,7 +24,10 @@ import { pushResult2Remote, addOutLinkUsage } from '@fastgpt/service/support/out
 import requestIp from 'request-ip';
 import { getUsageSourceByAuthType } from '@fastgpt/global/support/wallet/usage/tools';
 import { authTeamSpaceToken } from '@/service/support/permission/auth/team';
-import { filterPublicNodeResponseData } from '@fastgpt/global/core/chat/utils';
+import {
+  filterPublicNodeResponseData,
+  removeEmptyUserInput
+} from '@fastgpt/global/core/chat/utils';
 import { updateApiKeyUsage } from '@fastgpt/service/support/openapi/tools';
 import { connectToDatabase } from '@/service/mongo';
 import { getUserChatInfoAndAuthTeamPoints } from '@/service/support/permission/auth/team';
@@ -32,9 +39,13 @@ import { AuthOutLinkChatProps } from '@fastgpt/global/support/outLink/api';
 import { MongoChat } from '@fastgpt/service/core/chat/chatSchema';
 import { ChatErrEnum } from '@fastgpt/global/common/error/code/chat';
 import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
-import { setEntryEntries } from '@fastgpt/service/core/workflow/dispatch/utils';
 import { UserChatItemType } from '@fastgpt/global/core/chat/type';
-import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/module/runtime/constants';
+import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/workflow/runtime/constants';
+
+import { dispatchWorkFlowV1 } from '@fastgpt/service/core/workflow/dispatchV1';
+import { setEntryEntries } from '@fastgpt/service/core/workflow/dispatchV1/utils';
+import { NextAPI } from '@/service/middle/entry';
+import { getAppLatestVersion } from '@fastgpt/service/core/app/controller';
 
 type FastGptWebChatProps = {
   chatId?: string; // undefined: nonuse history, '': new chat, 'xxxxx': use history
@@ -66,7 +77,7 @@ type AuthResponseType = {
   outLinkUserId?: string;
 };
 
-export default withNextCors(async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.on('close', () => {
     res.end();
   });
@@ -156,62 +167,91 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
         });
       })();
 
-    // get and concat history
-    const { history } = await getChatItems({
-      appId: app._id,
-      chatId,
-      limit: 30,
-      field: `dataId obj value`
-    });
+    // 1. get and concat history; 2. get app workflow
+    const [{ history }, { nodes, edges }] = await Promise.all([
+      getChatItems({
+        appId: app._id,
+        chatId,
+        limit: 30,
+        field: `dataId obj value`
+      }),
+      getAppLatestVersion(app._id, app)
+    ]);
     const concatHistories = history.concat(chatMessages);
     const responseChatItemId: string | undefined = messages[messages.length - 1].dataId;
 
     /* start flow controller */
-    const { flowResponses, flowUsages, assistantResponses } = await dispatchWorkFlow({
-      res,
-      mode: 'chat',
-      user,
-      teamId: String(teamId),
-      tmbId: String(tmbId),
-      appId: String(app._id),
-      chatId,
-      responseChatItemId,
-      modules: setEntryEntries(app.modules),
-      variables,
-      inputFiles: files,
-      histories: concatHistories,
-      startParams: {
-        userChatInput: text
-      },
-      stream,
-      detail,
-      maxRunTimes: 200
-    });
+    const { flowResponses, flowUsages, assistantResponses, newVariables } = await (async () => {
+      if (app.version === 'v2') {
+        return dispatchWorkFlow({
+          res,
+          mode: 'chat',
+          user,
+          teamId: String(teamId),
+          tmbId: String(tmbId),
+          appId: String(app._id),
+          chatId,
+          responseChatItemId,
+          runtimeNodes: storeNodes2RuntimeNodes(nodes, getDefaultEntryNodeIds(nodes)),
+          runtimeEdges: initWorkflowEdgeStatus(edges),
+          variables,
+          query: removeEmptyUserInput(question.value),
+          histories: concatHistories,
+          stream,
+          detail,
+          maxRunTimes: 200
+        });
+      }
+      return dispatchWorkFlowV1({
+        res,
+        mode: 'chat',
+        user,
+        teamId: String(teamId),
+        tmbId: String(tmbId),
+        appId: String(app._id),
+        chatId,
+        responseChatItemId,
+        //@ts-ignore
+        modules: setEntryEntries(app.modules),
+        variables,
+        inputFiles: files,
+        histories: concatHistories,
+        startParams: {
+          userChatInput: text
+        },
+        stream,
+        detail,
+        maxRunTimes: 200
+      });
+    })();
 
     // save chat
     if (chatId) {
       const isOwnerUse = !shareId && !spaceTeamId && String(tmbId) === String(app.tmbId);
+      const source = (() => {
+        if (shareId) {
+          return ChatSourceEnum.share;
+        }
+        if (authType === 'apikey') {
+          return ChatSourceEnum.api;
+        }
+        if (spaceTeamId) {
+          return ChatSourceEnum.team;
+        }
+        return ChatSourceEnum.online;
+      })();
+
       await saveChat({
         chatId,
         appId: app._id,
         teamId,
         tmbId: tmbId,
-        variables,
-        updateUseTime: isOwnerUse, // owner update use time
+        nodes,
+        variables: newVariables,
+        isUpdateUseTime: isOwnerUse && source === ChatSourceEnum.online, // owner update use time
         shareId,
         outLinkUid: outLinkUserId,
-        source: (() => {
-          if (shareId) {
-            return ChatSourceEnum.share;
-          }
-          if (authType === 'apikey') {
-            return ChatSourceEnum.api;
-          }
-          if (spaceTeamId) {
-            return ChatSourceEnum.team;
-          }
-          return ChatSourceEnum.online;
-        })(),
+        source,
         content: [
           question,
           {
@@ -250,6 +290,11 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       });
 
       if (responseDetail && detail) {
+        responseWrite({
+          res,
+          event: SseResponseEventEnum.updateVariables,
+          data: JSON.stringify(newVariables)
+        });
         responseWrite({
           res,
           event: SseResponseEventEnum.flowResponses,
@@ -314,13 +359,8 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       });
     }
   }
-});
-
-export const config = {
-  api: {
-    responseLimit: '20mb'
-  }
-};
+}
+export default NextAPI(handler);
 
 const authShareChat = async ({
   chatId,
@@ -479,4 +519,10 @@ const authHeaderRequest = async ({
     authType,
     canWrite
   };
+};
+
+export const config = {
+  api: {
+    responseLimit: '20mb'
+  }
 };

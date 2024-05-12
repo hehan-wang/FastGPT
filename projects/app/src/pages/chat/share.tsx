@@ -26,7 +26,7 @@ import { getInitOutLinkChatInfo } from '@/web/core/chat/api';
 import { getChatTitleFromChatMessage } from '@fastgpt/global/core/chat/utils';
 import { useChatStore } from '@/web/core/chat/storeChat';
 import { ChatStatusEnum } from '@fastgpt/global/core/chat/constants';
-import MyBox from '@/components/common/MyBox';
+import MyBox from '@fastgpt/web/components/common/MyBox';
 import { MongoOutLink } from '@fastgpt/service/support/outLink/schema';
 import { OutLinkWithAppType } from '@fastgpt/global/support/outLink/type';
 import { addLog } from '@fastgpt/service/common/system/log';
@@ -84,12 +84,23 @@ const OutLink = ({
       const prompts = messages.slice(-2);
       const completionChatId = chatId ? chatId : nanoid();
 
-      const { responseText, responseData } = await streamFetch({
+      //post message to report chat start
+      window.top?.postMessage(
+        {
+          type: 'shareChatStart',
+          data: {
+            question: prompts[0]?.content
+          }
+        },
+        '*'
+      );
+
+      const { responseText, responseData, newVariables } = await streamFetch({
         data: {
           messages: prompts,
           variables: {
-            ...customVariables,
-            ...variables
+            ...variables,
+            ...customVariables
           },
           shareId,
           chatId: completionChatId,
@@ -158,7 +169,7 @@ const OutLink = ({
         '*'
       );
 
-      return { responseText, responseData, isNewChat: forbidRefresh.current };
+      return { responseText, responseData, isNewChat: forbidRefresh.current, newVariables };
     },
     [
       chatId,
@@ -420,7 +431,7 @@ export async function getServerSideProps(context: any) {
       appName: app?.appId?.name || '',
       appAvatar: app?.appId?.avatar || '',
       appIntro: app?.appId?.intro || '',
-      ...(await serviceSideProps(context))
+      ...(await serviceSideProps(context, ['file']))
     }
   };
 }

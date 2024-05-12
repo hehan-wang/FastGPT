@@ -23,7 +23,7 @@ export async function initPg() {
     `);
 
     await PgClient.query(
-      `CREATE INDEX CONCURRENTLY IF NOT EXISTS vector_index ON ${PgDatasetTableName} USING hnsw (vector vector_ip_ops) WITH (m = 32, ef_construction = 64);`
+      `CREATE INDEX CONCURRENTLY IF NOT EXISTS vector_index ON ${PgDatasetTableName} USING hnsw (vector vector_ip_ops) WITH (m = 32, ef_construction = 128);`
     );
     await PgClient.query(
       `CREATE INDEX CONCURRENTLY IF NOT EXISTS team_dataset_collection_index ON ${PgDatasetTableName} USING btree(team_id, dataset_id, collection_id);`
@@ -129,16 +129,15 @@ export const embeddingRecall = async (
 ): Promise<{
   results: EmbeddingRecallItemType[];
 }> => {
-  const { datasetIds, vectors, limit, similarity = 0, retry = 2, efSearch = 100 } = props;
+  const { datasetIds, vectors, limit, retry = 2 } = props;
 
   try {
     const results: any = await PgClient.query(
       `BEGIN;
-        SET LOCAL hnsw.ef_search = ${efSearch};
+        SET LOCAL hnsw.ef_search = ${global.systemEnv?.pgHNSWEfSearch || 100};
         select id, collection_id, vector <#> '[${vectors[0]}]' AS score 
           from ${PgDatasetTableName} 
           where dataset_id IN (${datasetIds.map((id) => `'${String(id)}'`).join(',')})
-              AND vector <#> '[${vectors[0]}]' < -${similarity}
           order by score limit ${limit};
         COMMIT;`
     );
@@ -153,10 +152,14 @@ export const embeddingRecall = async (
       }))
     };
   } catch (error) {
+    console.log(error);
     if (retry <= 0) {
       return Promise.reject(error);
     }
-    return embeddingRecall(props);
+    return embeddingRecall({
+      ...props,
+      retry: retry - 1
+    });
   }
 };
 

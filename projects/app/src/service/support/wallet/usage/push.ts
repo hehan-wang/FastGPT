@@ -8,13 +8,15 @@ import { ChatNodeUsageType } from '@fastgpt/global/support/wallet/bill/type';
 export const pushChatUsage = ({
   appName,
   appId,
+  pluginId,
   teamId,
   tmbId,
   source,
   flowUsages
 }: {
   appName: string;
-  appId: string;
+  appId?: string;
+  pluginId?: string;
   teamId: string;
   tmbId: string;
   source: `${UsageSourceEnum}`;
@@ -27,6 +29,7 @@ export const pushChatUsage = ({
     tmbId,
     appName,
     appId,
+    pluginId,
     totalPoints,
     source,
     list: flowUsages.map((item) => ({
@@ -39,7 +42,6 @@ export const pushChatUsage = ({
   addLog.info(`finish completions`, {
     source,
     teamId,
-    tmbId,
     totalPoints
   });
   return { totalPoints };
@@ -64,7 +66,7 @@ export const pushQAUsage = async ({
     modelType: ModelTypeEnum.llm,
     tokens
   });
-
+  console.log(tokens, '----');
   concatUsage({
     billId,
     teamId,

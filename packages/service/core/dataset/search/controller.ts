@@ -14,7 +14,7 @@ import {
 } from '@fastgpt/global/core/dataset/type';
 import { MongoDatasetCollection } from '../collection/schema';
 import { reRankRecall } from '../../../core/ai/rerank';
-import { countPromptTokens } from '@fastgpt/global/common/string/tiktoken';
+import { countPromptTokens } from '../../../common/string/tiktoken/index';
 import { datasetSearchResultConcat } from '@fastgpt/global/core/dataset/search/utils';
 import { hashStr } from '@fastgpt/global/common/string/tools';
 import { jiebaSplit } from '../../../common/string/jieba';
@@ -59,19 +59,19 @@ export async function searchDatasetData(props: SearchDatasetDataProps) {
   const countRecallLimit = () => {
     if (searchMode === DatasetSearchModeEnum.embedding) {
       return {
-        embeddingLimit: 150,
+        embeddingLimit: 100,
         fullTextLimit: 0
       };
     }
     if (searchMode === DatasetSearchModeEnum.fullTextRecall) {
       return {
         embeddingLimit: 0,
-        fullTextLimit: 150
+        fullTextLimit: 100
       };
     }
     return {
-      embeddingLimit: 100,
-      fullTextLimit: 80
+      embeddingLimit: 80,
+      fullTextLimit: 60
     };
   };
   const embeddingRecall = async ({ query, limit }: { query: string; limit: number }) => {
@@ -82,10 +82,10 @@ export async function searchDatasetData(props: SearchDatasetDataProps) {
     });
 
     const { results } = await recallFromVectorStore({
-      vectors,
-      limit,
+      teamId,
       datasetIds,
-      efSearch: global.systemEnv?.pgHNSWEfSearch
+      vectors,
+      limit
     });
 
     // get q and a
@@ -258,13 +258,16 @@ export async function searchDatasetData(props: SearchDatasetDataProps) {
       return [];
     }
   };
-  const filterResultsByMaxTokens = (list: SearchDataResponseItemType[], maxTokens: number) => {
+  const filterResultsByMaxTokens = async (
+    list: SearchDataResponseItemType[],
+    maxTokens: number
+  ) => {
     const results: SearchDataResponseItemType[] = [];
     let totalTokens = 0;
 
-    for (let i = 0; i < list.length; i++) {
-      const item = list[i];
-      totalTokens += countPromptTokens(item.q + item.a);
+    for await (const item of list) {
+      totalTokens += await countPromptTokens(item.q + item.a);
+
       if (totalTokens > maxTokens + 500) {
         break;
       }
@@ -398,7 +401,7 @@ export async function searchDatasetData(props: SearchDatasetDataProps) {
   })();
 
   return {
-    searchRes: filterResultsByMaxTokens(scoreFilter, maxTokens),
+    searchRes: await filterResultsByMaxTokens(scoreFilter, maxTokens),
     tokens,
     searchMode,
     limit: maxTokens,
