@@ -1,15 +1,17 @@
 {
+  "Add new": "Add new",
   "App": "App",
   "Export": "Export",
   "Folder": "Folder",
+  "Login": "Login",
   "Move": "Move",
   "Name": "Name",
+  "New Create": "Create New",
+  "No data": "No data",
   "Rename": "Rename",
   "Running": "Running",
   "UnKnow": "Unknown",
   "Warning": "Warning",
-  "New Create": "Create New",
-
   "common": {
     "Action": "Action",
     "Add": "Add",
@@ -44,6 +46,7 @@
     "Delete Tip": "Delete Tip",
     "Delete Warning": "Delete Warning",
     "Detail": "Detail",
+    "Documents": "Documents",
     "Done": "Done",
     "Edit": "Edit",
     "Exit": "Exit",
@@ -92,6 +95,7 @@
     "Rename Success": "Rename Success",
     "Request Error": "Request Error",
     "Require Input": "Required Input",
+    "Role": "Role",
     "Root folder": "Root folder",
     "Save": "Save",
     "Save Failed": "Save Failed",
@@ -99,6 +103,7 @@
     "Search": "Search",
     "Select File Failed": "Select File Failed",
     "Select One Folder": "Select a folder",
+    "Select all": "Select all",
     "Select template": "Select template",
     "Set Avatar": "Click to set avatar",
     "Set Name": "Set a name",
@@ -509,18 +514,14 @@
       "Choose Dataset": "Associate dataset",
       "Chunk amount": "Number of chunks",
       "Collection": "Dataset",
-      "Common Dataset": "Common dataset",
-      "Common Dataset Desc": "Can be built by importing files, web links, or manual entry",
       "Create dataset": "Create a dataset",
       "Dataset": "Dataset",
       "Dataset ID": "Dataset ID",
       "Dataset Type": "Dataset type",
       "Delete Confirm": "Confirm to delete this dataset? Data cannot be recovered after deletion, please confirm!",
       "Delete Website Tips": "Confirm to delete this site?",
-      "Empty Dataset": "",
       "Empty Dataset Tips": "No datasets yet, go create one!",
       "File collection": "File dataset",
-      "Folder Dataset": "Folder",
       "Folder placeholder": "This is a directory",
       "Go Dataset": "Go to dataset",
       "Intro Placeholder": "This dataset has no introduction~",
@@ -540,8 +541,6 @@
       "Table collection": "Table dataset",
       "Text collection": "Text dataset",
       "Total chunks": "Total chunks: {{total}}",
-      "Website Dataset": "Web site synchronization",
-      "Website Dataset Desc": "Web site synchronization allows you to use a web page link to build a dataset",
       "collection": {
         "Click top config website": "Click to configure website",
         "Collection name": "Dataset name",
@@ -580,7 +579,8 @@
             "success": "Start syncing"
           }
         },
-        "training": {}
+        "training": {
+        }
       },
       "data": {
         "Auxiliary Data": "Auxiliary data",
@@ -863,10 +863,10 @@
         "params": "Params"
       },
       "input": {
+        "Add Branch": "Add branch",
         "Add Input": "Add input",
         "Input Number": "Input: {{length}}",
         "add": "Add condition",
-        "Add Branch": "Add branch",
         "description": {
           "Background": "You can add some specific content introductions to better identify the user's question type. This content is usually to introduce something unknown to the model.",
           "HTTP Dynamic Input": "Receives the output value of the previous node as a variable, which can be used by HTTP request parameters.",
@@ -1567,7 +1567,7 @@
       "Remove Member Failed": "Failed to remove team member",
       "Remove Member Success": "Successfully removed team member",
       "Remove Member Tip": "Remove from Team",
-      "Role": "Role",
+      "Role": "Role(Old)",
       "Select Team": "Select Team",
       "Set Name": "Name Your Team",
       "Switch Team Failed": "Failed to switch team",

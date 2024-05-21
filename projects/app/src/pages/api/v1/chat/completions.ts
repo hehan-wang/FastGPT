@@ -10,6 +10,7 @@ import type { ChatCompletionCreateParams } from '@fastgpt/global/core/ai/type.d'
 import type { ChatCompletionMessageParam } from '@fastgpt/global/core/ai/type.d';
 import {
   getDefaultEntryNodeIds,
+  getMaxHistoryLimitFromNodes,
   initWorkflowEdgeStatus,
   storeNodes2RuntimeNodes,
   textAdaptGptResponse
@@ -44,7 +45,7 @@ import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/workflow/runti
 
 import { dispatchWorkFlowV1 } from '@fastgpt/service/core/workflow/dispatchV1';
 import { setEntryEntries } from '@fastgpt/service/core/workflow/dispatchV1/utils';
-import { NextAPI } from '@/service/middle/entry';
+import { NextAPI } from '@/service/middleware/entry';
 import { getAppLatestVersion } from '@fastgpt/service/core/app/controller';
 
 type FastGptWebChatProps = {
@@ -168,11 +169,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       })();
 
     // 1. get and concat history; 2. get app workflow
+    const limit = getMaxHistoryLimitFromNodes(app.modules);
     const [{ history }, { nodes, edges }] = await Promise.all([
       getChatItems({
         appId: app._id,
         chatId,
-        limit: 30,
+        limit,
         field: `dataId obj value`
       }),
       getAppLatestVersion(app._id, app)
@@ -523,6 +525,9 @@ const authHeaderRequest = async ({
 
 export const config = {
   api: {
+    bodyParser: {
+      sizeLimit: '20mb'
+    },
     responseLimit: '20mb'
   }
 };

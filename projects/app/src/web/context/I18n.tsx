@@ -8,6 +8,8 @@ type I18nContextType = {
   datasetT: TFunction<['dataset'], undefined>;
   fileT: TFunction<['file'], undefined>;
   publishT: TFunction<['publish'], undefined>;
+  workflowT: TFunction<['workflow'], undefined>;
+  userT: TFunction<['user'], undefined>;
 };
 
 export const I18nContext = createContext<I18nContextType>({
@@ -21,6 +23,8 @@ const I18nContextProvider = ({ children }: { children: React.ReactNode }) => {
   const { t: datasetT } = useTranslation('dataset');
   const { t: fileT } = useTranslation('file');
   const { t: publishT } = useTranslation('publish');
+  const { t: workflowT } = useTranslation('workflow');
+  const { t: userT } = useTranslation('user');
 
   return (
     <I18nContext.Provider
@@ -29,7 +33,9 @@ const I18nContextProvider = ({ children }: { children: React.ReactNode }) => {
         appT,
         datasetT,
         fileT,
-        publishT
+        publishT,
+        workflowT,
+        userT
       }}
     >
       {children}

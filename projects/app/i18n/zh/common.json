@@ -1,15 +1,17 @@
 {
+  "Add new": "新增",
   "App": "应用",
   "Export": "导出",
   "Folder": "文件夹",
+  "Login": "登录",
   "Move": "移动",
   "Name": "名称",
+  "New Create": "新建",
+  "No data": "暂无数据",
   "Rename": "重命名",
   "Running": "运行中",
   "UnKnow": "未知",
   "Warning": "提示",
-  "New Create": "新建",
-
   "common": {
     "Action": "操作",
     "Add": "添加",
@@ -44,6 +46,7 @@
     "Delete Tip": "删除提示",
     "Delete Warning": "删除警告",
     "Detail": "详情",
+    "Documents": "文档",
     "Done": "完成",
     "Edit": "编辑",
     "Exit": "退出",
@@ -81,6 +84,7 @@
     "Output": "输出",
     "Params": "参数",
     "Password inconsistency": "两次密码不一致",
+    "Permission": "权限",
     "Please Input Name": "请输入名称",
     "Price used": "金额消耗",
     "Read document": "查看文档",
@@ -92,6 +96,7 @@
     "Rename Success": "重命名成功",
     "Request Error": "请求异常",
     "Require Input": "必填",
+    "Role": "权限",
     "Root folder": "根目录",
     "Save": "保存",
     "Save Failed": "保存失败",
@@ -99,6 +104,7 @@
     "Search": "搜索",
     "Select File Failed": "选择文件异常",
     "Select One Folder": "选择一个目录",
+    "Select all": "全选",
     "Select template": "选择模板",
     "Set Avatar": "点击设置头像",
     "Set Name": "取个名字",
@@ -509,8 +515,6 @@
       "Choose Dataset": "关联知识库",
       "Chunk amount": "分段数",
       "Collection": "数据集",
-      "Common Dataset": "通用知识库",
-      "Common Dataset Desc": "可通过导入文件、网页链接或手动录入形式构建知识库",
       "Create dataset": "创建一个知识库",
       "Dataset": "知识库",
       "Dataset ID": "知识库 ID",
@@ -520,7 +524,6 @@
       "Empty Dataset": "",
       "Empty Dataset Tips": "还没有知识库，快去创建一个吧！",
       "File collection": "文件数据集",
-      "Folder Dataset": "文件夹",
       "Folder placeholder": "这是一个目录",
       "Go Dataset": "前往知识库",
       "Intro Placeholder": "这个知识库还没有介绍~",
@@ -540,8 +543,6 @@
       "Table collection": "表格数据集",
       "Text collection": "文本数据集",
       "Total chunks": "总分段: {{total}}",
-      "Website Dataset": "Web 站点同步",
-      "Website Dataset Desc": "Web 站点同步允许你直接使用一个网页链接构建知识库",
       "collection": {
         "Click top config website": "点击配置网站",
         "Collection name": "数据集名称",
@@ -580,7 +581,8 @@
             "success": "开始同步"
           }
         },
-        "training": {}
+        "training": {
+        }
       },
       "data": {
         "Auxiliary Data": "辅助数据",
@@ -1572,7 +1574,7 @@
       "Remove Member Failed": "移除团队成员异常",
       "Remove Member Success": "移除团队成员成功",
       "Remove Member Tip": "移出团队",
-      "Role": "身份",
+      "Role": "身份(旧版)",
       "Select Team": "团队选择",
       "Set Name": "给团队取个名字",
       "Switch Team Failed": "切换团队异常",

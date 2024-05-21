@@ -10,14 +10,19 @@
 		"scope": "javascript,typescript",
 		"prefix": "nextapi",
 		"body": [
-			"import type { NextApiRequest, NextApiResponse } from 'next';",
-			"import { NextAPI } from '@/service/middle/entry';",
+			"import type { ApiRequestProps, ApiResponseType } from '@fastgpt/service/type/next';",
+			"import { NextAPI } from '@/service/middleware/entry';",
 			"",
-			"type Props = {};",
+			"export type ${TM_FILENAME_BASE}Query = {};",
 			"",
-			"type Response = {};",
+			"export type ${TM_FILENAME_BASE}Body = {};",
 			"",
-			"async function handler(req: NextApiRequest, res: NextApiResponse<any>): Promise<Response> {",
+			"export type ${TM_FILENAME_BASE}Response = {};",
+			"",
+			"async function handler(",
+			"  req: ApiRequestProps<${TM_FILENAME_BASE}Body, ${TM_FILENAME_BASE}Query>,",
+			"  res: ApiResponseType<any>",
+			"): Promise<${TM_FILENAME_BASE}Response> {",
 			"    $1",
 			"    return {}",
 			"}",
@@ -25,5 +30,23 @@
 			"export default NextAPI(handler);"
 		],
 		"description": "FastGPT Next API template"
+	},
+	"use context template": {
+		"scope": "typescriptreact",
+		"prefix": "context",
+		"body": [
+			"import { ReactNode } from 'react';",
+			"import { createContext } from 'use-context-selector';",
+			"",
+			"type ContextType = {$1};",
+			"",
+			"export const Context = createContext<ContextType>({});",
+			"",
+			"export const ContextProvider = ({ children }: { children: ReactNode }) => {",
+			"  const contextValue: ContextType = {};",
+			"  return <Context.Provider value={contextValue}>{children}</Context.Provider>;",
+			"};",
+		],
+		"description": "FastGPT usecontext template"
 	}
 }

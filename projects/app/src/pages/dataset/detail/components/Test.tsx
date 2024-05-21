@@ -5,7 +5,7 @@ import { useSearchTestStore, SearchTestStoreItemType } from '@/web/core/dataset/
 import { postSearchText } from '@/web/core/dataset/api';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useRequest } from '@fastgpt/web/hooks/useRequest';
-import { formatTimeToChatTime } from '@/utils/tools';
+import { formatTimeToChatTime } from '@fastgpt/global/common/string/time';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import { customAlphabet } from 'nanoid';
@@ -25,6 +25,8 @@ import { fileDownload } from '@/web/common/file/utils';
 import QuoteItem from '@/components/core/dataset/QuoteItem';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import SearchParamsTip from '@/components/core/dataset/SearchParamsTip';
+import { useContextSelector } from 'use-context-selector';
+import { DatasetPageContext } from '@/web/core/dataset/context/datasetPageContext';
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz1234567890', 12);
 
@@ -48,7 +50,7 @@ const Test = ({ datasetId }: { datasetId: string }) => {
   const theme = useTheme();
   const { toast } = useToast();
   const { llmModelList } = useSystemStore();
-  const { datasetDetail } = useDatasetStore();
+  const datasetDetail = useContextSelector(DatasetPageContext, (v) => v.datasetDetail);
   const { pushDatasetTestItem } = useSearchTestStore();
   const [inputType, setInputType] = useState<'text' | 'file'>('text');
   const [datasetTestItem, setDatasetTestItem] = useState<SearchTestStoreItemType>();

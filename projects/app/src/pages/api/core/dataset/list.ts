@@ -6,10 +6,10 @@ import { MongoDataset } from '@fastgpt/service/core/dataset/schema';
 import { mongoRPermission } from '@fastgpt/global/support/permission/utils';
 import { authUserRole } from '@fastgpt/service/support/permission/auth/user';
 import { getVectorModel } from '@fastgpt/service/core/ai/model';
-import { NextAPI } from '@/service/middle/entry';
+import { NextAPI } from '@/service/middleware/entry';
 
 async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
-  const { parentId, type } = req.query as { parentId?: string; type?: `${DatasetTypeEnum}` };
+  const { parentId, type } = req.query as { parentId?: string; type?: DatasetTypeEnum };
   // 凭证校验
   const { teamId, tmbId, teamOwner, role, canWrite } = await authUserRole({
     req,

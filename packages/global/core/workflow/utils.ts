@@ -1,4 +1,4 @@
-import { FlowNodeOutputTypeEnum, FlowNodeTypeEnum } from './node/constant';
+import { FlowNodeInputTypeEnum, FlowNodeOutputTypeEnum, FlowNodeTypeEnum } from './node/constant';
 import {
   WorkflowIOValueTypeEnum,
   NodeInputKeyEnum,
@@ -11,7 +11,8 @@ import type {
   VariableItemType,
   AppTTSConfigType,
   AppWhisperConfigType,
-  AppScheduledTriggerConfigType
+  AppScheduledTriggerConfigType,
+  AppQuestionGuideTextConfigType
 } from '../app/type';
 import { EditorVariablePickerType } from '../../../web/components/common/Textarea/PromptEditor/type';
 import { defaultWhisperConfig } from '../app/constants';
@@ -22,15 +23,9 @@ export const getHandleId = (nodeId: string, type: 'source' | 'target', key: stri
 };
 
 export const checkInputIsReference = (input: FlowNodeInputItemType) => {
-  const value = input.value;
-  if (
-    Array.isArray(value) &&
-    value.length === 2 &&
-    typeof value[0] === 'string' &&
-    typeof value[1] === 'string'
-  ) {
+  if (input.renderTypeList?.[input?.selectedTypeIndex || 0] === FlowNodeInputTypeEnum.reference)
     return true;
-  }
+
   return false;
 };
 
@@ -65,13 +60,20 @@ export const splitGuideModule = (guideModules?: StoreNodeItemType) => {
     guideModules?.inputs?.find((item) => item.key === NodeInputKeyEnum.scheduleTrigger)?.value ??
     null;
 
+  const questionGuideText: AppQuestionGuideTextConfigType = guideModules?.inputs?.find(
+    (item) => item.key === NodeInputKeyEnum.questionGuideText
+  )?.value || {
+    open: false
+  };
+
   return {
     welcomeText,
     variableNodes,
     questionGuide,
     ttsConfig,
     whisperConfig,
-    scheduledTriggerConfig
+    scheduledTriggerConfig,
+    questionGuideText
   };
 };
 export const replaceAppChatConfig = ({
