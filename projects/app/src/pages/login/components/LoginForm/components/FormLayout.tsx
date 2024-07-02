@@ -8,7 +8,7 @@ import { customAlphabet } from 'nanoid';
 import { useRouter } from 'next/router';
 import { Dispatch, useRef } from 'react';
 import { useTranslation } from 'next-i18next';
-import Divider from '@/components/core/workflow/Flow/components/Divider';
+import Divider from '@/pages/app/detail/components/WorkflowComponents/Flow/components/Divider';
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz1234567890', 8);
 
 interface Props {
@@ -26,13 +26,13 @@ const FormLayout = ({ children, setPageType, pageType }: Props) => {
   const redirectUri = `${location.origin}/login/provider`;
 
   const oAuthList = [
-    ...(feConfigs?.oauth?.github
+    ...(feConfigs?.oauth?.wechat && pageType !== LoginPageTypeEnum.wechat
       ? [
           {
-            label: t('support.user.login.Github'),
-            provider: OAuthEnum.github,
-            icon: 'common/gitFill',
-            redirectUrl: `https://github.com/login/oauth/authorize?client_id=${feConfigs?.oauth?.github}&redirect_uri=${redirectUri}&state=${state.current}&scope=user:email%20read:user`
+            label: t('support.user.login.Wechat'),
+            provider: OAuthEnum.wechat,
+            icon: 'common/wechatFill',
+            pageType: LoginPageTypeEnum.wechat
           }
         ]
       : []),
@@ -46,13 +46,13 @@ const FormLayout = ({ children, setPageType, pageType }: Props) => {
           }
         ]
       : []),
-    ...(feConfigs?.oauth?.wechat && pageType !== LoginPageTypeEnum.wechat
+    ...(feConfigs?.oauth?.github
       ? [
           {
-            label: t('support.user.login.Wechat'),
-            provider: OAuthEnum.wechat,
-            icon: 'common/wechatFill',
-            pageType: LoginPageTypeEnum.wechat
+            label: t('support.user.login.Github'),
+            provider: OAuthEnum.github,
+            icon: 'common/gitFill',
+            redirectUrl: `https://github.com/login/oauth/authorize?client_id=${feConfigs?.oauth?.github}&redirect_uri=${redirectUri}&state=${state.current}&scope=user:email%20read:user`
           }
         ]
       : []),

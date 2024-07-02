@@ -24,6 +24,7 @@ export const RunAppModule: FlowNodeTemplateType = {
   intro: '可以选择一个其他应用进行调用',
   showStatus: true,
   version: '481',
+  isTool: true,
   inputs: [
     {
       key: NodeInputKeyEnum.runAppSelectApp,
@@ -34,7 +35,10 @@ export const RunAppModule: FlowNodeTemplateType = {
       required: true
     },
     Input_Template_History,
-    Input_Template_UserChatInput
+    {
+      ...Input_Template_UserChatInput,
+      toolDescription: '用户问题'
+    }
   ],
   outputs: [
     {
@@ -43,6 +47,7 @@ export const RunAppModule: FlowNodeTemplateType = {
       label: '新的上下文',
       description: '将该应用回复内容拼接到历史记录中，作为新的上下文返回',
       valueType: WorkflowIOValueTypeEnum.chatHistory,
+      required: true,
       type: FlowNodeOutputTypeEnum.static
     },
     {

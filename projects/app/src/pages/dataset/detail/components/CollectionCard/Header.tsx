@@ -26,8 +26,6 @@ import EditFolderModal, { useEditFolder } from '../../../component/EditFolderMod
 import { TabEnum } from '../../index';
 import ParentPath from '@/components/common/ParentPaths';
 import dynamic from 'next/dynamic';
-import { useUserStore } from '@/web/support/user/useUserStore';
-import { TeamMemberRoleEnum } from '@fastgpt/global/support/user/team/constant';
 
 import { ImportDataSourceEnum } from '@fastgpt/global/core/dataset/constants';
 import { useContextSelector } from 'use-context-selector';
@@ -40,7 +38,6 @@ const Header = ({}: {}) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { setLoading } = useSystemStore();
-  const { userInfo } = useUserStore();
   const datasetDetail = useContextSelector(DatasetPageContext, (v) => v.datasetDetail);
 
   const router = useRouter();
@@ -122,7 +119,7 @@ const Header = ({}: {}) => {
           }))}
           FirstPathDom={
             <>
-              <Box fontWeight={'bold'} fontSize={['sm', 'lg']}>
+              <Box fontWeight={'bold'} fontSize={['sm', 'md']}>
                 {t(DatasetTypeMap[datasetDetail?.type]?.collectionLabel)}({total})
               </Box>
               {datasetDetail?.websiteConfig?.url && (
@@ -189,7 +186,7 @@ const Header = ({}: {}) => {
       )}
 
       {/* diff collection button */}
-      {userInfo?.team?.role !== TeamMemberRoleEnum.visitor && (
+      {datasetDetail.permission.hasWritePer && (
         <>
           {datasetDetail?.type === DatasetTypeEnum.dataset && (
             <MyMenu
@@ -219,54 +216,58 @@ const Header = ({}: {}) => {
               }
               menuList={[
                 {
-                  label: (
-                    <Flex>
-                      <MyIcon name={'common/folderFill'} w={'20px'} mr={2} />
-                      {t('Folder')}
-                    </Flex>
-                  ),
-                  onClick: () => setEditFolderData({})
-                },
-                {
-                  label: (
-                    <Flex>
-                      <MyIcon name={'core/dataset/manualCollection'} mr={2} w={'20px'} />
-                      {t('core.dataset.Manual collection')}
-                    </Flex>
-                  ),
-                  onClick: () => {
-                    onOpenCreateVirtualFileModal({
-                      defaultVal: '',
-                      onSuccess: (name) => {
-                        onCreateCollection({ name, type: DatasetCollectionTypeEnum.virtual });
+                  children: [
+                    {
+                      label: (
+                        <Flex>
+                          <MyIcon name={'common/folderFill'} w={'20px'} mr={2} />
+                          {t('Folder')}
+                        </Flex>
+                      ),
+                      onClick: () => setEditFolderData({})
+                    },
+                    {
+                      label: (
+                        <Flex>
+                          <MyIcon name={'core/dataset/manualCollection'} mr={2} w={'20px'} />
+                          {t('core.dataset.Manual collection')}
+                        </Flex>
+                      ),
+                      onClick: () => {
+                        onOpenCreateVirtualFileModal({
+                          defaultVal: '',
+                          onSuccess: (name) => {
+                            onCreateCollection({ name, type: DatasetCollectionTypeEnum.virtual });
+                          }
+                        });
                       }
-                    });
-                  }
-                },
-                {
-                  label: (
-                    <Flex>
-                      <MyIcon name={'core/dataset/fileCollection'} mr={2} w={'20px'} />
-                      {t('core.dataset.Text collection')}
-                    </Flex>
-                  ),
-                  onClick: onOpenFileSourceSelector
-                },
-                {
-                  label: (
-                    <Flex>
-                      <MyIcon name={'core/dataset/tableCollection'} mr={2} w={'20px'} />
-                      {t('core.dataset.Table collection')}
-                    </Flex>
-                  ),
-                  onClick: () =>
-                    router.replace({
-                      query: {
-                        ...router.query,
-                        currentTab: TabEnum.import,
-                        source: ImportDataSourceEnum.csvTable
-                      }
-                    })
+                    },
+                    {
+                      label: (
+                        <Flex>
+                          <MyIcon name={'core/dataset/fileCollection'} mr={2} w={'20px'} />
+                          {t('core.dataset.Text collection')}
+                        </Flex>
+                      ),
+                      onClick: onOpenFileSourceSelector
+                    },
+                    {
+                      label: (
+                        <Flex>
+                          <MyIcon name={'core/dataset/tableCollection'} mr={2} w={'20px'} />
+                          {t('core.dataset.Table collection')}
+                        </Flex>
+                      ),
+                      onClick: () =>
+                        router.replace({
+                          query: {
+                            ...router.query,
+                            currentTab: TabEnum.import,
+                            source: ImportDataSourceEnum.csvTable
+                          }
+                        })
+                    }
+                  ]
                 }
               ]}
             />
@@ -334,29 +335,33 @@ const Header = ({}: {}) => {
               }
               menuList={[
                 {
-                  label: (
-                    <Flex>
-                      <MyIcon name={'common/folderFill'} w={'20px'} mr={2} />
-                      {t('Folder')}
-                    </Flex>
-                  ),
-                  onClick: () => setEditFolderData({})
-                },
-                {
-                  label: (
-                    <Flex>
-                      <MyIcon name={'core/dataset/fileCollection'} mr={2} w={'20px'} />
-                      {t('core.dataset.Text collection')}
-                    </Flex>
-                  ),
-                  onClick: () =>
-                    router.replace({
-                      query: {
-                        ...router.query,
-                        currentTab: TabEnum.import,
-                        source: ImportDataSourceEnum.externalFile
-                      }
-                    })
+                  children: [
+                    {
+                      label: (
+                        <Flex>
+                          <MyIcon name={'common/folderFill'} w={'20px'} mr={2} />
+                          {t('Folder')}
+                        </Flex>
+                      ),
+                      onClick: () => setEditFolderData({})
+                    },
+                    {
+                      label: (
+                        <Flex>
+                          <MyIcon name={'core/dataset/fileCollection'} mr={2} w={'20px'} />
+                          {t('core.dataset.Text collection')}
+                        </Flex>
+                      ),
+                      onClick: () =>
+                        router.replace({
+                          query: {
+                            ...router.query,
+                            currentTab: TabEnum.import,
+                            source: ImportDataSourceEnum.externalFile
+                          }
+                        })
+                    }
+                  ]
                 }
               ]}
             />

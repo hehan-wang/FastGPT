@@ -1,18 +1,24 @@
-import React, { useContext, createContext, useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAudioPlay } from '@/web/common/utils/voice';
 import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
-import { StoreNodeItemType } from '@fastgpt/global/core/workflow/type/index.d';
-import { splitGuideModule } from '@fastgpt/global/core/workflow/utils';
 import {
+  AppChatConfigType,
   AppTTSConfigType,
   AppWhisperConfigType,
+  ChatInputGuideConfigType,
   VariableItemType
 } from '@fastgpt/global/core/app/type';
 import { ChatSiteItemType } from '@fastgpt/global/core/chat/type';
+import {
+  defaultChatInputGuideConfig,
+  defaultTTSConfig,
+  defaultWhisperConfig
+} from '@fastgpt/global/core/app/constants';
+import { createContext } from 'use-context-selector';
 
 type useChatStoreType = OutLinkChatAuthProps & {
   welcomeText: string;
-  variableNodes: VariableItemType[];
+  variableList: VariableItemType[];
   questionGuide: boolean;
   ttsConfig: AppTTSConfigType;
   whisperConfig: AppWhisperConfigType;
@@ -38,10 +44,12 @@ type useChatStoreType = OutLinkChatAuthProps & {
   chatHistories: ChatSiteItemType[];
   setChatHistories: React.Dispatch<React.SetStateAction<ChatSiteItemType[]>>;
   isChatting: boolean;
+  chatInputGuide: ChatInputGuideConfigType;
+  outLinkAuthData: OutLinkChatAuthProps;
 };
-const StateContext = createContext<useChatStoreType>({
+export const ChatBoxContext = createContext<useChatStoreType>({
   welcomeText: '',
-  variableNodes: [],
+  variableList: [],
   questionGuide: false,
   ttsConfig: {
     type: 'none',
@@ -87,32 +95,49 @@ const StateContext = createContext<useChatStoreType>({
   },
   finishSegmentedAudio: function (): void {
     throw new Error('Function not implemented.');
-  }
+  },
+  chatInputGuide: {
+    open: false,
+    customUrl: ''
+  },
+  outLinkAuthData: {}
 });
 
 export type ChatProviderProps = OutLinkChatAuthProps & {
-  userGuideModule?: StoreNodeItemType;
+  chatConfig?: AppChatConfigType;
 
   // not chat test params
   chatId?: string;
   children: React.ReactNode;
 };
 
-export const useChatProviderStore = () => useContext(StateContext);
-
 const Provider = ({
   shareId,
   outLinkUid,
   teamId,
   teamToken,
-  userGuideModule,
+  chatConfig = {},
   children
 }: ChatProviderProps) => {
   const [chatHistories, setChatHistories] = useState<ChatSiteItemType[]>([]);
 
-  const { welcomeText, variableNodes, questionGuide, ttsConfig, whisperConfig } = useMemo(
-    () => splitGuideModule(userGuideModule),
-    [userGuideModule]
+  const {
+    welcomeText = '',
+    variables = [],
+    questionGuide = false,
+    ttsConfig = defaultTTSConfig,
+    whisperConfig = defaultWhisperConfig,
+    chatInputGuide = defaultChatInputGuideConfig
+  } = useMemo(() => chatConfig, [chatConfig]);
+
+  const outLinkAuthData = useMemo(
+    () => ({
+      shareId,
+      outLinkUid,
+      teamId,
+      teamToken
+    }),
+    [shareId, outLinkUid, teamId, teamToken]
   );
 
   // segment audio
@@ -128,10 +153,7 @@ const Provider = ({
     splitText2Audio
   } = useAudioPlay({
     ttsConfig,
-    shareId,
-    outLinkUid,
-    teamId,
-    teamToken
+    ...outLinkAuthData
   });
 
   const autoTTSResponse =
@@ -150,7 +172,7 @@ const Provider = ({
     teamId,
     teamToken,
     welcomeText,
-    variableNodes,
+    variableList: variables,
     questionGuide,
     ttsConfig,
     whisperConfig,
@@ -167,10 +189,12 @@ const Provider = ({
     setAudioPlayingChatId,
     chatHistories,
     setChatHistories,
-    isChatting
+    isChatting,
+    chatInputGuide,
+    outLinkAuthData
   };
 
-  return <StateContext.Provider value={value}>{children}</StateContext.Provider>;
+  return <ChatBoxContext.Provider value={value}>{children}</ChatBoxContext.Provider>;
 };
 
 export default React.memo(Provider);

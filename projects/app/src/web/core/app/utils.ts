@@ -1,12 +1,13 @@
 import {
+  AppChatConfigType,
   AppDetailType,
-  AppQuestionGuideTextConfigType,
   AppSchema,
   AppSimpleEditFormType
 } from '@fastgpt/global/core/app/type';
 import { StoreNodeItemType } from '@fastgpt/global/core/workflow/type/index.d';
 import {
   FlowNodeInputTypeEnum,
+  FlowNodeOutputTypeEnum,
   FlowNodeTypeEnum
 } from '@fastgpt/global/core/workflow/node/constant';
 import { NodeInputKeyEnum, WorkflowIOValueTypeEnum } from '@fastgpt/global/core/workflow/constants';
@@ -15,13 +16,23 @@ import { getNanoid } from '@fastgpt/global/common/string/tools';
 import { StoreEdgeItemType } from '@fastgpt/global/core/workflow/type/edge';
 import { EditorVariablePickerType } from '@fastgpt/web/components/common/Textarea/PromptEditor/type';
 import { TFunction } from 'next-i18next';
+import { ToolModule } from '@fastgpt/global/core/workflow/template/system/tools';
+import { useDatasetStore } from '../dataset/store/dataset';
 
 type WorkflowType = {
   nodes: StoreNodeItemType[];
   edges: StoreEdgeItemType[];
 };
-export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
+export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType & {
+  chatConfig: AppChatConfigType;
+} {
   const workflowStartNodeId = 'workflowStartNodeId';
+
+  const allDatasets = useDatasetStore.getState().allDatasets;
+  const selectedDatasets = data.dataset.datasets.filter((item) =>
+    allDatasets.some((ds) => ds._id === item.datasetId)
+  );
+
   function systemConfigTemplate(formData: AppSimpleEditFormType): StoreNodeItemType {
     return {
       nodeId: 'userGuide',
@@ -33,50 +44,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
         y: -486.7611729549753
       },
       version: '481',
-      inputs: [
-        {
-          key: NodeInputKeyEnum.welcomeText,
-          renderTypeList: [FlowNodeInputTypeEnum.hidden],
-          label: 'core.app.Welcome Text',
-          value: formData.userGuide.welcomeText
-        },
-        {
-          key: NodeInputKeyEnum.variables,
-          renderTypeList: [FlowNodeInputTypeEnum.hidden],
-          label: 'core.app.Chat Variable',
-          value: formData.userGuide.variables
-        },
-        {
-          key: NodeInputKeyEnum.questionGuide,
-          renderTypeList: [FlowNodeInputTypeEnum.hidden],
-          label: 'core.app.Question Guide',
-          value: formData.userGuide.questionGuide
-        },
-        {
-          key: NodeInputKeyEnum.tts,
-          renderTypeList: [FlowNodeInputTypeEnum.hidden],
-          label: '',
-          value: formData.userGuide.tts
-        },
-        {
-          key: NodeInputKeyEnum.whisper,
-          renderTypeList: [FlowNodeInputTypeEnum.hidden],
-          label: '',
-          value: formData.userGuide.whisper
-        },
-        {
-          key: NodeInputKeyEnum.scheduleTrigger,
-          renderTypeList: [FlowNodeInputTypeEnum.hidden],
-          label: '',
-          value: formData.userGuide.scheduleTrigger
-        },
-        {
-          key: NodeInputKeyEnum.questionGuideText,
-          renderTypeList: [FlowNodeInputTypeEnum.hidden],
-          label: '',
-          value: formData.userGuide.questionGuideText
-        }
-      ],
+      inputs: [],
       outputs: []
     };
   }
@@ -108,7 +76,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
           key: 'userChatInput',
           label: 'core.module.input.label.user question',
           valueType: WorkflowIOValueTypeEnum.string,
-          type: 'static'
+          type: FlowNodeOutputTypeEnum.static
         }
       ]
     };
@@ -224,7 +192,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
               label: 'core.module.output.label.New context',
               description: 'core.module.output.description.New context',
               valueType: WorkflowIOValueTypeEnum.chatHistory,
-              type: 'static'
+              type: FlowNodeOutputTypeEnum.static
             },
             {
               id: 'answerText',
@@ -232,7 +200,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
               label: 'core.module.output.label.Ai response content',
               description: 'core.module.output.description.Ai response content',
               valueType: WorkflowIOValueTypeEnum.string,
-              type: 'static'
+              type: FlowNodeOutputTypeEnum.static
             }
           ]
         }
@@ -358,7 +326,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
               label: 'core.module.output.label.New context',
               description: 'core.module.output.description.New context',
               valueType: WorkflowIOValueTypeEnum.chatHistory,
-              type: 'static'
+              type: FlowNodeOutputTypeEnum.static
             },
             {
               id: 'answerText',
@@ -366,7 +334,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
               label: 'core.module.output.label.Ai response content',
               description: 'core.module.output.description.Ai response content',
               valueType: WorkflowIOValueTypeEnum.string,
-              type: 'static'
+              type: FlowNodeOutputTypeEnum.static
             }
           ]
         },
@@ -390,7 +358,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
                 FlowNodeInputTypeEnum.reference
               ],
               label: 'core.module.input.label.Select dataset',
-              value: formData.dataset.datasets,
+              value: selectedDatasets,
               valueType: WorkflowIOValueTypeEnum.selectDataset,
               list: [],
               required: true
@@ -459,7 +427,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
               id: 'quoteQA',
               key: 'quoteQA',
               label: 'core.module.Dataset quote.label',
-              type: 'static',
+              type: FlowNodeOutputTypeEnum.static,
               valueType: WorkflowIOValueTypeEnum.datasetQuote
             }
           ]
@@ -486,7 +454,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
     const datasetNodeId = getNanoid(6);
 
     const datasetTool: WorkflowType | null =
-      formData.dataset.datasets.length > 0
+      selectedDatasets.length > 0
         ? {
             nodes: [
               {
@@ -509,7 +477,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
                       FlowNodeInputTypeEnum.reference
                     ],
                     label: 'core.module.input.label.Select dataset',
-                    value: formData.dataset.datasets,
+                    value: selectedDatasets,
                     valueType: WorkflowIOValueTypeEnum.selectDataset,
                     list: [],
                     required: true
@@ -580,7 +548,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
                     id: 'quoteQA',
                     key: 'quoteQA',
                     label: 'core.module.Dataset quote.label',
-                    type: 'static',
+                    type: FlowNodeOutputTypeEnum.static,
                     valueType: WorkflowIOValueTypeEnum.datasetQuote
                   }
                 ]
@@ -705,7 +673,7 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
               value: [workflowStartNodeId, 'userChatInput']
             }
           ],
-          outputs: []
+          outputs: ToolModule.outputs
         },
         // tool nodes
         ...(datasetTool ? datasetTool.nodes : []),
@@ -729,13 +697,14 @@ export function form2AppWorkflow(data: AppSimpleEditFormType): WorkflowType {
 
   const workflow = (() => {
     if (data.selectedTools.length > 0) return toolTemplates(data);
-    if (data.dataset.datasets.length > 0) return datasetTemplate(data);
+    if (selectedDatasets.length > 0) return datasetTemplate(data);
     return simpleChatTemplate(data);
   })();
 
   return {
     nodes: [systemConfigTemplate(data), workflowStartTemplate(), ...workflow.nodes],
-    edges: workflow.edges
+    edges: workflow.edges,
+    chatConfig: data.chatConfig
   };
 }
 
@@ -744,6 +713,7 @@ export const getSystemVariables = (t: TFunction): EditorVariablePickerType[] => 
     {
       key: 'appId',
       label: t('core.module.http.AppId'),
+      required: true,
       valueType: WorkflowIOValueTypeEnum.string
     },
     {
@@ -759,11 +729,13 @@ export const getSystemVariables = (t: TFunction): EditorVariablePickerType[] => 
     {
       key: 'histories',
       label: t('core.module.http.Histories'),
+      required: true,
       valueType: WorkflowIOValueTypeEnum.chatHistory
     },
     {
       key: 'cTime',
       label: t('core.module.http.Current time'),
+      required: true,
       valueType: WorkflowIOValueTypeEnum.string
     }
   ];
@@ -773,29 +745,6 @@ export const getAppQGuideCustomURL = (appDetail: AppDetailType | AppSchema): str
   return (
     appDetail?.modules
       .find((m) => m.flowNodeType === FlowNodeTypeEnum.systemConfig)
-      ?.inputs.find((i) => i.key === NodeInputKeyEnum.questionGuideText)?.value.customURL || ''
+      ?.inputs.find((i) => i.key === NodeInputKeyEnum.chatInputGuide)?.value.customUrl || ''
   );
-};
-
-export const getNodesWithNoQGuide = (
-  nodes: StoreNodeItemType[],
-  questionGuideText: AppQuestionGuideTextConfigType
-): StoreNodeItemType[] => {
-  return nodes.map((node) => {
-    if (node.flowNodeType === FlowNodeTypeEnum.systemConfig) {
-      return {
-        ...node,
-        inputs: node.inputs.map((input) => {
-          if (input.key === NodeInputKeyEnum.questionGuideText) {
-            return {
-              ...input,
-              value: { ...questionGuideText, textList: [] }
-            };
-          }
-          return input;
-        })
-      };
-    }
-    return node;
-  });
 };

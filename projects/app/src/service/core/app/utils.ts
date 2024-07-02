@@ -1,5 +1,6 @@
 import { getUserChatInfoAndAuthTeamPoints } from '@/service/support/permission/auth/team';
 import { getNextTimeByCronStringAndTimezone } from '@fastgpt/global/common/string/time';
+import { getNanoid } from '@fastgpt/global/common/string/tools';
 import { delay } from '@fastgpt/global/common/system/utils';
 import { ChatItemValueTypeEnum } from '@fastgpt/global/core/chat/constants';
 import {
@@ -28,11 +29,12 @@ export const getScheduleTriggerApp = async () => {
 
       try {
         await dispatchWorkFlow({
+          chatId: getNanoid(),
           user,
           mode: 'chat',
           teamId: String(app.teamId),
           tmbId: String(app.tmbId),
-          appId: String(app._id),
+          app,
           runtimeNodes: storeNodes2RuntimeNodes(app.modules, getDefaultEntryNodeIds(app.modules)),
           runtimeEdges: initWorkflowEdgeStatus(app.edges),
           variables: {},

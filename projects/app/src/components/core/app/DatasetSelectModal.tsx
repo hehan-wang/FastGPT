@@ -13,7 +13,7 @@ import {
 import Avatar from '@/components/Avatar';
 import type { SelectedDatasetType } from '@fastgpt/global/core/workflow/api.d';
 import { useToast } from '@fastgpt/web/hooks/useToast';
-import MyTooltip from '@/components/MyTooltip';
+import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import { DatasetTypeEnum } from '@fastgpt/global/core/dataset/constants';
 import { useTranslation } from 'next-i18next';
@@ -85,7 +85,7 @@ export const DatasetSelectModal = ({
                     bg={'primary.200'}
                   >
                     <Flex alignItems={'center'} h={'38px'}>
-                      <Avatar src={item.avatar} w={['24px', '28px']}></Avatar>
+                      <Avatar src={item.avatar} w={['1.25rem', '1.75rem']}></Avatar>
                       <Box flex={'1 0 0'} w={0} className="textEllipsis" mx={3}>
                         {item.name}
                       </Box>
@@ -162,8 +162,8 @@ export const DatasetSelectModal = ({
                           w={0}
                           className="textEllipsis"
                           ml={3}
-                          fontWeight={'bold'}
-                          fontSize={['md', 'lg', 'xl']}
+                          fontSize={'md'}
+                          color={'myGray.900'}
                         >
                           {item.name}
                         </Box>

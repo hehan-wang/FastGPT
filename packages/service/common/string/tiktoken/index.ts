@@ -70,7 +70,7 @@ export const countGptMessagesTokens = (
 
       callbackMap[id] = (data) => {
         // 检测是否有内存泄漏
-        addLog.info(`Count token time: ${Date.now() - start}, token: ${data}`);
+        addLog.debug(`Count token time: ${Date.now() - start}, token: ${data}`);
         // console.log(process.memoryUsage());
 
         resolve(data);
@@ -85,7 +85,14 @@ export const countGptMessagesTokens = (
         functionCall
       });
     } catch (error) {
-      resolve(0);
+      addLog.error('Count token error', error);
+      const total = messages.reduce((sum, item) => {
+        if (item.content) {
+          return sum + item.content.length;
+        }
+        return sum;
+      }, 0);
+      resolve(total);
     }
   });
 };

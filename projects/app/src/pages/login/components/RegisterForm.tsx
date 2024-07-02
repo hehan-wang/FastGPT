@@ -7,7 +7,7 @@ import { useSendCode } from '@/web/support/user/hooks/useSendCode';
 import type { ResLogin } from '@/global/support/api/userRes';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import { postCreateApp } from '@/web/core/app/api';
-import { appTemplates } from '@/web/core/app/templates';
+import { defaultAppTemplates } from '@/web/core/app/templates';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import { useTranslation } from 'next-i18next';
 
@@ -68,11 +68,12 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
         });
         // auto register template app
         setTimeout(() => {
-          appTemplates.forEach((template) => {
+          defaultAppTemplates.forEach((template) => {
             postCreateApp({
               avatar: template.avatar,
               name: t(template.name),
               modules: template.modules,
+              edges: template.edges,
               type: template.type
             });
           });
@@ -181,7 +182,7 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
           type="submit"
           mt={6}
           w={'100%'}
-          size={['md', 'lg']}
+          size={['md', 'md']}
           colorScheme="blue"
           isLoading={requesting}
           onClick={handleSubmit(onclickRegister)}

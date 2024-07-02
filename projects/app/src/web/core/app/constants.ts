@@ -1,22 +1,25 @@
+import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import { AppDetailType } from '@fastgpt/global/core/app/type.d';
 import type { FeishuType, OutLinkEditType } from '@fastgpt/global/support/outLink/type.d';
+import { AppPermission } from '@fastgpt/global/support/permission/app/controller';
+import { NullPermission } from '@fastgpt/global/support/permission/constant';
 
 export const defaultApp: AppDetailType = {
   _id: '',
   name: '应用加载中',
-  type: 'simple',
+  type: AppTypeEnum.simple,
   avatar: '/icon/logo.svg',
   intro: '',
-  updateTime: Date.now(),
+  updateTime: new Date(),
   modules: [],
+  chatConfig: {},
   teamId: '',
   tmbId: '',
-  permission: 'private',
-  isOwner: false,
-  canWrite: false,
   teamTags: [],
   edges: [],
-  version: 'v2'
+  version: 'v2',
+  defaultPermission: NullPermission,
+  permission: new AppPermission()
 };
 
 export const defaultOutLinkForm: OutLinkEditType = {

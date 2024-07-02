@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Flex,
@@ -17,16 +17,18 @@ import {
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useTranslation } from 'next-i18next';
 import LeftRadio from '@fastgpt/web/components/common/Radio/LeftRadio';
-import { TrainingTypeMap } from '@fastgpt/global/core/dataset/constants';
+import { TrainingModeEnum, TrainingTypeMap } from '@fastgpt/global/core/dataset/constants';
 import { ImportProcessWayEnum } from '@/web/core/dataset/constants';
-import MyTooltip from '@/components/MyTooltip';
+import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import MyModal from '@fastgpt/web/components/common/MyModal';
 import { Prompt_AgentQA } from '@fastgpt/global/core/ai/prompt/agent';
 import Preview from '../components/Preview';
-import Tag from '@fastgpt/web/components/common/Tag/index';
+import MyTag from '@fastgpt/web/components/common/Tag/index';
 import { useContextSelector } from 'use-context-selector';
 import { DatasetImportContext } from '../Context';
+import { useToast } from '@fastgpt/web/hooks/useToast';
+import FormLabel from '@fastgpt/web/components/common/MyBox/FormLabel';
 
 function DataProcess({ showPreviewChunks = true }: { showPreviewChunks: boolean }) {
   const { t } = useTranslation();
@@ -42,8 +44,10 @@ function DataProcess({ showPreviewChunks = true }: { showPreviewChunks: boolean 
     maxChunkSize,
     priceTip
   } = useContextSelector(DatasetImportContext, (v) => v);
-  const { getValues, setValue, register } = processParamsForm;
-  const [refresh, setRefresh] = useState(false);
+  const { getValues, setValue, register, watch } = processParamsForm;
+  const { toast } = useToast();
+  const mode = watch('mode');
+  const way = watch('way');
 
   const {
     isOpen: isOpenCustomPrompt,
@@ -53,25 +57,32 @@ function DataProcess({ showPreviewChunks = true }: { showPreviewChunks: boolean 
 
   const trainingModeList = useMemo(() => {
     const list = Object.entries(TrainingTypeMap);
+    return list;
+  }, []);
 
-    return list.filter(([key, value]) => {
-      if (feConfigs?.isPlus) return true;
-      return value.openSource;
-    });
-  }, [feConfigs?.isPlus]);
+  const onSelectTrainWay = useCallback(
+    (e: TrainingModeEnum) => {
+      if (!feConfigs?.isPlus && !TrainingTypeMap[e]?.openSource) {
+        return toast({
+          status: 'warning',
+          title: t('common.system.Commercial version function')
+        });
+      }
+      setValue('mode', e);
+    },
+    [feConfigs?.isPlus, setValue, t, toast]
+  );
 
   return (
-    <Box h={'100%'} display={['block', 'flex']} gap={5}>
+    <Box h={'100%'} display={['block', 'flex']} gap={5} fontSize={'sm'}>
       <Box flex={'1 0 0'} minW={['auto', '540px']} maxW={'600px'}>
         <Flex alignItems={'center'}>
           <MyIcon name={'common/settingLight'} w={'20px'} />
-          <Box fontSize={'lg'}>{t('core.dataset.import.Data process params')}</Box>
+          <Box fontSize={'md'}>{t('core.dataset.import.Data process params')}</Box>
         </Flex>
 
         <Flex mt={4} alignItems={'center'}>
-          <Box color={'myGray.600'} flex={'0 0 100px'}>
-            {t('core.dataset.import.Training mode')}
-          </Box>
+          <FormLabel flex={'0 0 100px'}>{t('core.dataset.import.Training mode')}</FormLabel>
           <LeftRadio
             list={trainingModeList.map(([key, value]) => ({
               title: t(value.label),
@@ -80,20 +91,16 @@ function DataProcess({ showPreviewChunks = true }: { showPreviewChunks: boolean 
             }))}
             px={3}
             py={2}
-            value={getValues('mode')}
-            onChange={(e) => {
-              setValue('mode', e);
-              setRefresh(!refresh);
-            }}
-            gridTemplateColumns={'repeat(3,1fr)'}
+            value={mode}
+            onChange={onSelectTrainWay}
             defaultBg="white"
             activeBg="white"
+            display={'flex'}
+            flexWrap={'wrap'}
           />
         </Flex>
         <Flex mt={5}>
-          <Box color={'myGray.600'} flex={'0 0 100px'}>
-            {t('core.dataset.import.Process way')}
-          </Box>
+          <FormLabel flex={'0 0 100px'}>{t('core.dataset.import.Process way')}</FormLabel>
           <LeftRadio
             list={[
               {
@@ -105,7 +112,7 @@ function DataProcess({ showPreviewChunks = true }: { showPreviewChunks: boolean 
                 title: t('core.dataset.import.Custom process'),
                 desc: t('core.dataset.import.Custom process desc'),
                 value: ImportProcessWayEnum.custom,
-                children: getValues('way') === ImportProcessWayEnum.custom && (
+                children: way === ImportProcessWayEnum.custom && (
                   <Box mt={5}>
                     {showChunkInput && chunkSizeField && (
                       <Box>
@@ -250,20 +257,19 @@ function DataProcess({ showPreviewChunks = true }: { showPreviewChunks: boolean 
             py={3}
             defaultBg="white"
             activeBg="white"
-            value={getValues('way')}
+            value={way}
             w={'100%'}
             onChange={(e) => {
               setValue('way', e);
-              setRefresh(!refresh);
             }}
           ></LeftRadio>
         </Flex>
         <Flex mt={5} alignItems={'center'} pl={'100px'} gap={3}>
           {feConfigs?.show_pay && (
             <MyTooltip label={priceTip}>
-              <Tag colorSchema={'gray'} py={'6px'} borderRadius={'md'} px={3}>
+              <MyTag colorSchema={'gray'} py={'6px'} borderRadius={'md'} px={3}>
                 {priceTip}
-              </Tag>
+              </MyTag>
             </MyTooltip>
           )}
         </Flex>
@@ -286,7 +292,6 @@ function DataProcess({ showPreviewChunks = true }: { showPreviewChunks: boolean 
           defaultValue={getValues('qaPrompt')}
           onChange={(e) => {
             setValue('qaPrompt', e);
-            setRefresh(!refresh);
           }}
           onClose={onCloseCustomPrompt}
         />

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { authApp } from '@fastgpt/service/support/permission/auth/app';
+import { authApp } from '@fastgpt/service/support/permission/app/auth';
 import { authCert } from '@fastgpt/service/support/permission/auth/common';
 import { sseErrRes, jsonRes } from '@fastgpt/service/common/response';
 import { addLog } from '@fastgpt/service/common/system/log';
@@ -47,6 +47,7 @@ import { dispatchWorkFlowV1 } from '@fastgpt/service/core/workflow/dispatchV1';
 import { setEntryEntries } from '@fastgpt/service/core/workflow/dispatchV1/utils';
 import { NextAPI } from '@/service/middleware/entry';
 import { getAppLatestVersion } from '@fastgpt/service/core/app/controller';
+import { ReadPermissionVal } from '@fastgpt/global/support/permission/constant';
 
 type FastGptWebChatProps = {
   chatId?: string; // undefined: nonuse history, '': new chat, 'xxxxx': use history
@@ -163,14 +164,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         return authHeaderRequest({
           req,
           appId,
-          chatId,
-          detail
+          chatId
         });
       })();
 
     // 1. get and concat history; 2. get app workflow
     const limit = getMaxHistoryLimitFromNodes(app.modules);
-    const [{ history }, { nodes, edges }] = await Promise.all([
+    const [{ history }, { nodes, edges, chatConfig }] = await Promise.all([
       getChatItems({
         appId: app._id,
         chatId,
@@ -191,7 +191,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           user,
           teamId: String(teamId),
           tmbId: String(tmbId),
-          appId: String(app._id),
+          app,
           chatId,
           responseChatItemId,
           runtimeNodes: storeNodes2RuntimeNodes(nodes, getDefaultEntryNodeIds(nodes)),
@@ -249,6 +249,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         teamId,
         tmbId: tmbId,
         nodes,
+        appChatConfig: chatConfig,
         variables: newVariables,
         isUpdateUseTime: isOwnerUse && source === ChatSourceEnum.online, // owner update use time
         shareId,
@@ -291,17 +292,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         data: '[DONE]'
       });
 
-      if (responseDetail && detail) {
-        responseWrite({
-          res,
-          event: SseResponseEventEnum.updateVariables,
-          data: JSON.stringify(newVariables)
-        });
-        responseWrite({
-          res,
-          event: SseResponseEventEnum.flowResponses,
-          data: JSON.stringify(feResponseData)
-        });
+      if (detail) {
+        if (responseDetail) {
+          responseWrite({
+            res,
+            event: SseResponseEventEnum.flowResponses,
+            data: JSON.stringify(feResponseData)
+          });
+        }
       }
 
       res.end();
@@ -313,7 +311,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         return assistantResponses;
       })();
       res.json({
-        ...(detail ? { responseData: feResponseData } : {}),
+        ...(detail ? { responseData: feResponseData, newVariables } : {}),
         id: chatId || '',
         model: '',
         usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 1 },
@@ -442,13 +440,11 @@ const authTeamSpaceChat = async ({
 const authHeaderRequest = async ({
   req,
   appId,
-  chatId,
-  detail
+  chatId
 }: {
   req: NextApiRequest;
   appId?: string;
   chatId?: string;
-  detail?: boolean;
 }): Promise<AuthResponseType> => {
   const {
     appId: apiKeyAppId,
@@ -487,17 +483,16 @@ const authHeaderRequest = async ({
       if (!appId) {
         return Promise.reject('appId is empty');
       }
-      const { app, canWrite } = await authApp({
+      const { app, permission } = await authApp({
         req,
         authToken: true,
         appId,
-        per: 'r'
+        per: ReadPermissionVal
       });
 
       return {
         app,
-
-        canWrite: canWrite
+        canWrite: permission.hasReadPer
       };
     }
   })();
@@ -516,7 +511,7 @@ const authHeaderRequest = async ({
     tmbId,
     user,
     app,
-    responseDetail: detail,
+    responseDetail: true,
     apikey,
     authType,
     canWrite

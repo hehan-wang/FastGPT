@@ -1,12 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { jsonRes } from '@fastgpt/service/common/response';
-import { connectToDatabase } from '@/service/mongo';
 import { authCert } from '@fastgpt/service/support/permission/auth/common';
-import { PgClient } from '@fastgpt/service/common/vectorStore/pg';
 import { NextAPI } from '@/service/middleware/entry';
-import { PgDatasetTableName } from '@fastgpt/global/common/vectorStore/constants';
 import { connectionMongo } from '@fastgpt/service/common/mongo';
-import { addLog } from '@fastgpt/service/common/system/log';
 
 /* pg 中的数据搬到 mongo dataset.datas 中，并做映射 */
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -148,7 +144,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
       if ((await targetCol.countDocuments()) > 1) {
         // 除了root
-        console.log('team_members 中有数据，无法自动将 buffer.tts 迁移到 team_members，请手动操作');
+        console.log('team_members 中有数据，无法自动将 team.tts 迁移到 team_members，请手动操作');
       } else {
         await sourceCol.rename('team_members', { dropTarget: true });
         console.log('success rename team.members -> team_members');

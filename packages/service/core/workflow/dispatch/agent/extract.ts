@@ -12,7 +12,7 @@ import { NodeInputKeyEnum, NodeOutputKeyEnum } from '@fastgpt/global/core/workfl
 import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/workflow/runtime/constants';
 import type { ModuleDispatchProps } from '@fastgpt/global/core/workflow/type/index.d';
 import { Prompt_ExtractJson } from '@fastgpt/global/core/ai/prompt/agent';
-import { replaceVariable } from '@fastgpt/global/common/string/tools';
+import { replaceVariable, sliceJsonStr } from '@fastgpt/global/common/string/tools';
 import { LLMModelItemType } from '@fastgpt/global/core/ai/model.d';
 import { getHistories } from '../utils';
 import { ModelTypeEnum, getLLMModel } from '../../../ai/model';
@@ -35,8 +35,7 @@ type Props = ModuleDispatchProps<{
   [NodeInputKeyEnum.aiModel]: string;
 }>;
 type Response = DispatchNodeResultType<{
-  [NodeOutputKeyEnum.success]?: boolean;
-  [NodeOutputKeyEnum.failed]?: boolean;
+  [NodeOutputKeyEnum.success]: boolean;
   [NodeOutputKeyEnum.contextExtractFields]: string;
 }>;
 
@@ -119,9 +118,7 @@ export async function dispatchContentExtract(props: Props): Promise<Response> {
   });
 
   return {
-    // [DispatchNodeResponseKeyEnum.skipHandleId]: success
-    //   ? [getHandleId(nodeId, 'source', NodeOutputKeyEnum.failed)]
-    //   : [getHandleId(nodeId, 'source', NodeOutputKeyEnum.success)],
+    [NodeOutputKeyEnum.success]: success,
     [NodeOutputKeyEnum.contextExtractFields]: JSON.stringify(arg),
     ...arg,
     [DispatchNodeResponseKeyEnum.nodeResponse]: {
@@ -186,7 +183,7 @@ ${description ? `- ${description}` : ''}
   > = {};
   extractKeys.forEach((item) => {
     properties[item.key] = {
-      type: 'string',
+      type: item.valueType || 'string',
       description: item.desc,
       ...(item.enum ? { enum: item.enum.split('\n') } : {})
     };
@@ -201,7 +198,7 @@ ${description ? `- ${description}` : ''}
       required: []
     }
   };
-
+  console.log(properties);
   return {
     filterMessages,
     agentFunction
@@ -322,12 +319,18 @@ const completions = async ({
             content: replaceVariable(extractModel.customExtractPrompt || Prompt_ExtractJson, {
               description,
               json: extractKeys
-                .map(
-                  (item) =>
-                    `{"key":"${item.key}", "description":"${item.desc}"${
-                      item.enum ? `, "enum":"[${item.enum.split('\n')}]"` : ''
-                    }}`
-                )
+                .map((item) => {
+                  const valueType = item.valueType || 'string';
+                  if (valueType !== 'string' && valueType !== 'number') {
+                    item.enum = undefined;
+                  }
+
+                  return `{"type":${item.valueType || 'string'}, "key":"${
+                    item.key
+                  }", "description":"${item.desc}" ${
+                    item.enum ? `, "enum":"[${item.enum.split('\n')}]"` : ''
+                  }}`;
+                })
                 .join('\n'),
               text: `${histories
                 .map((item) => `${item.obj}:${chatValue2RuntimePrompt(item.value).text}`)
@@ -353,21 +356,15 @@ Human: ${content}`
   const answer = data.choices?.[0].message?.content || '';
 
   // parse response
-  const start = answer.indexOf('{');
-  const end = answer.lastIndexOf('}');
+  const jsonStr = sliceJsonStr(answer);
 
-  if (start === -1 || end === -1) {
+  if (!jsonStr) {
     return {
       rawResponse: answer,
       tokens: await countMessagesTokens(messages),
       arg: {}
     };
   }
-
-  const jsonStr = answer
-    .substring(start, end + 1)
-    .replace(/(\\n|\\)/g, '')
-    .replace(/  /g, '');
 
   try {
     return {
@@ -376,6 +373,7 @@ Human: ${content}`
       arg: json5.parse(jsonStr) as Record<string, any>
     };
   } catch (error) {
+    console.log('Extract error, ai answer:', answer);
     console.log(error);
     return {
       rawResponse: answer,

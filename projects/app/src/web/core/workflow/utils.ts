@@ -19,8 +19,8 @@ import { NodeInputKeyEnum, NodeOutputKeyEnum } from '@fastgpt/global/core/workfl
 import { EditorVariablePickerType } from '@fastgpt/web/components/common/Textarea/PromptEditor/type';
 import {
   formatEditorVariablePickerIcon,
-  getGuideModule,
-  splitGuideModule
+  getAppChatConfig,
+  getGuideModule
 } from '@fastgpt/global/core/workflow/utils';
 import { getSystemVariables } from '../app/utils';
 import { TFunction } from 'next-i18next';
@@ -31,6 +31,8 @@ import {
 } from '@fastgpt/global/core/workflow/type/io';
 import { IfElseListItemType } from '@fastgpt/global/core/workflow/template/system/ifElse/type';
 import { VariableConditionEnum } from '@fastgpt/global/core/workflow/template/system/ifElse/constant';
+import { AppChatConfigType } from '@fastgpt/global/core/app/type';
+import { cloneDeep, isEqual } from 'lodash';
 
 export const nodeTemplate2FlowNode = ({
   template,
@@ -56,9 +58,11 @@ export const nodeTemplate2FlowNode = ({
   };
 };
 export const storeNode2FlowNode = ({
-  item: storeNode
+  item: storeNode,
+  selected = false
 }: {
   item: StoreNodeItemType;
+  selected?: boolean;
 }): Node<FlowNodeItemType> => {
   // init some static data
   const template =
@@ -99,6 +103,7 @@ export const storeNode2FlowNode = ({
     id: storeNode.nodeId,
     type: storeNode.flowNodeType,
     data: moduleItem,
+    selected,
     position: storeNode.position || { x: 0, y: 0 }
   };
 };
@@ -114,11 +119,13 @@ export const computedNodeInputReference = ({
   nodeId,
   nodes,
   edges,
+  chatConfig,
   t
 }: {
   nodeId: string;
   nodes: FlowNodeItemType[];
   edges: Edge[];
+  chatConfig: AppChatConfigType;
   t: TFunction;
 }) => {
   // get current node
@@ -144,29 +151,55 @@ export const computedNodeInputReference = ({
   };
   findSourceNode(nodeId);
 
-  sourceNodes.unshift(getGlobalVariableNode(nodes, t));
+  sourceNodes.unshift(
+    getGlobalVariableNode({
+      nodes,
+      t,
+      chatConfig
+    })
+  );
 
   return sourceNodes;
 };
-export const getReferenceDataValueType = ({
+export const getRefData = ({
   variable,
   nodeList,
+  chatConfig,
   t
 }: {
   variable?: ReferenceValueProps;
   nodeList: FlowNodeItemType[];
+  chatConfig: AppChatConfigType;
   t: TFunction;
 }) => {
-  if (!variable) return WorkflowIOValueTypeEnum.any;
+  if (!variable)
+    return {
+      valueType: WorkflowIOValueTypeEnum.any,
+      required: false
+    };
 
   const node = nodeList.find((node) => node.nodeId === variable[0]);
-  const systemVariables = getWorkflowGlobalVariables(nodeList, t);
+  const systemVariables = getWorkflowGlobalVariables({ nodes: nodeList, chatConfig, t });
 
-  if (!node) return systemVariables.find((item) => item.key === variable?.[1])?.valueType;
+  if (!node) {
+    const globalVariable = systemVariables.find((item) => item.key === variable?.[1]);
+    return {
+      valueType: globalVariable?.valueType || WorkflowIOValueTypeEnum.any,
+      required: !!globalVariable?.required
+    };
+  }
 
   const output = node.outputs.find((item) => item.id === variable[1]);
-  if (!output) return WorkflowIOValueTypeEnum.any;
-  return output.valueType;
+  if (!output)
+    return {
+      valueType: WorkflowIOValueTypeEnum.any,
+      required: false
+    };
+
+  return {
+    valueType: output.valueType,
+    required: !!output.required
+  };
 };
 
 /* Connection rules */
@@ -288,12 +321,21 @@ export const filterSensitiveNodesData = (nodes: StoreNodeItemType[]) => {
 };
 
 /* get workflowStart output to global variables */
-export const getWorkflowGlobalVariables = (
-  nodes: FlowNodeItemType[],
-  t: TFunction
-): EditorVariablePickerType[] => {
+export const getWorkflowGlobalVariables = ({
+  nodes,
+  chatConfig,
+  t
+}: {
+  nodes: FlowNodeItemType[];
+  chatConfig: AppChatConfigType;
+  t: TFunction;
+}): EditorVariablePickerType[] => {
   const globalVariables = formatEditorVariablePickerIcon(
-    splitGuideModule(getGuideModule(nodes))?.variableNodes || []
+    getAppChatConfig({
+      chatConfig,
+      systemConfigNode: getGuideModule(nodes),
+      isPublicFetch: true
+    })?.variables || []
   ).map((item) => ({
     ...item,
     valueType: WorkflowIOValueTypeEnum.any
@@ -338,4 +380,85 @@ export const updateFlowNodeVersion = (
   }
 
   return updatedNode;
+};
+
+type WorkflowType = {
+  nodes: StoreNodeItemType[];
+  edges: StoreEdgeItemType[];
+  chatConfig: AppChatConfigType;
+};
+export const compareWorkflow = (workflow1: WorkflowType, workflow2: WorkflowType) => {
+  const clone1 = cloneDeep(workflow1);
+  const clone2 = cloneDeep(workflow2);
+
+  if (!isEqual(clone1.edges, clone2.edges)) {
+    console.log('Edge not equal');
+    return false;
+  }
+
+  if (
+    clone1.chatConfig &&
+    clone2.chatConfig &&
+    !isEqual(
+      {
+        welcomeText: clone1.chatConfig?.welcomeText || '',
+        variables: clone1.chatConfig?.variables || [],
+        questionGuide: clone1.chatConfig?.questionGuide || false,
+        ttsConfig: clone1.chatConfig?.ttsConfig || undefined,
+        whisperConfig: clone1.chatConfig?.whisperConfig || undefined,
+        scheduledTriggerConfig: clone1.chatConfig?.scheduledTriggerConfig || undefined,
+        chatInputGuide: clone1.chatConfig?.chatInputGuide || undefined
+      },
+      {
+        welcomeText: clone2.chatConfig?.welcomeText || '',
+        variables: clone2.chatConfig?.variables || [],
+        questionGuide: clone2.chatConfig?.questionGuide || false,
+        ttsConfig: clone2.chatConfig?.ttsConfig || undefined,
+        whisperConfig: clone2.chatConfig?.whisperConfig || undefined,
+        scheduledTriggerConfig: clone2.chatConfig?.scheduledTriggerConfig || undefined,
+        chatInputGuide: clone2.chatConfig?.chatInputGuide || undefined
+      }
+    )
+  ) {
+    console.log('chatConfig not equal');
+    return false;
+  }
+
+  const node1 = clone1.nodes.filter(Boolean).map((node) => ({
+    flowNodeType: node.flowNodeType,
+    inputs: node.inputs.map((input) => ({
+      ...input,
+      value: input.value ?? undefined
+    })),
+    outputs: node.outputs.map((input) => ({
+      ...input,
+      value: input.value ?? undefined
+    })),
+    name: node.name,
+    intro: node.intro,
+    avatar: node.avatar,
+    version: node.version,
+    position: node.position
+  }));
+  const node2 = clone2.nodes.filter(Boolean).map((node) => ({
+    flowNodeType: node.flowNodeType,
+    inputs: node.inputs.map((input) => ({
+      ...input,
+      value: input.value ?? undefined
+    })),
+    outputs: node.outputs.map((input) => ({
+      ...input,
+      value: input.value ?? undefined
+    })),
+    name: node.name,
+    intro: node.intro,
+    avatar: node.avatar,
+    version: node.version,
+    position: node.position
+  }));
+
+  // console.log(node1);
+  // console.log(node2);
+
+  return isEqual(node1, node2);
 };

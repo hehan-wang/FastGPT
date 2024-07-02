@@ -1,192 +1,290 @@
-import React, { useCallback } from 'react';
-import { Box, Grid, Flex, IconButton, Button, useDisclosure } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
-import { useQuery } from '@tanstack/react-query';
+import React, { useCallback, useState } from 'react';
+import { Box, Flex, Button, useDisclosure } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
-import { delModelById } from '@/web/core/app/api';
-import { useToast } from '@fastgpt/web/hooks/useToast';
-import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 import { serviceSideProps } from '@/web/common/utils/i18n';
-import MyIcon from '@fastgpt/web/components/common/Icon';
-import PageContainer from '@/components/PageContainer';
-import Avatar from '@/components/Avatar';
-import MyTooltip from '@/components/MyTooltip';
-import CreateModal from './component/CreateModal';
-import { useAppStore } from '@/web/core/app/store/useAppStore';
-import PermissionIconText from '@/components/support/permission/IconText';
 import { useUserStore } from '@/web/support/user/useUserStore';
 import { useI18n } from '@/web/context/I18n';
 import { useTranslation } from 'next-i18next';
+import dynamic from 'next/dynamic';
+
+import List from './components/List';
+import MyMenu from '@fastgpt/web/components/common/MyMenu';
+import { FolderIcon } from '@fastgpt/global/common/file/image/constants';
+import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
+import { postCreateAppFolder } from '@/web/core/app/api/app';
+import type { EditFolderFormType } from '@fastgpt/web/components/common/MyModal/EditFolderModal';
+import { useContextSelector } from 'use-context-selector';
+import AppListContextProvider, { AppListContext } from './components/context';
+import FolderPath from '@/components/common/folder/Path';
+import { useRouter } from 'next/router';
+import FolderSlideCard from '@/components/common/folder/SlideCard';
+import { delAppById } from '@/web/core/app/api';
+import {
+  AppDefaultPermissionVal,
+  AppPermissionList
+} from '@fastgpt/global/support/permission/app/constant';
+import {
+  deleteAppCollaborators,
+  getCollaboratorList,
+  postUpdateAppCollaborators
+} from '@/web/core/app/api/collaborator';
+import { useSystemStore } from '@/web/common/system/useSystemStore';
+import type { CreateAppType } from './components/CreateModal';
+import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
+import MyBox from '@fastgpt/web/components/common/MyBox';
+import LightRowTabs from '@fastgpt/web/components/common/Tabs/LightRowTabs';
+
+const CreateModal = dynamic(() => import('./components/CreateModal'));
+const EditFolderModal = dynamic(
+  () => import('@fastgpt/web/components/common/MyModal/EditFolderModal')
+);
+const HttpEditModal = dynamic(() => import('./components/HttpPluginEditModal'));
 
 const MyApps = () => {
   const { t } = useTranslation();
-  const { toast } = useToast();
-  const { appT, commonT } = useI18n();
-
+  const { appT } = useI18n();
   const router = useRouter();
-  const { userInfo } = useUserStore();
-  const { myApps, loadMyApps } = useAppStore();
-  const { openConfirm, ConfirmModal } = useConfirm({
-    title: '删除提示',
-    content: '确认删除该应用所有信息？'
-  });
+  const { isPc } = useSystemStore();
   const {
-    isOpen: isOpenCreateModal,
-    onOpen: onOpenCreateModal,
-    onClose: onCloseCreateModal
+    paths,
+    parentId,
+    myApps,
+    appType,
+    loadMyApps,
+    onUpdateApp,
+    setMoveAppId,
+    isFetchingApps,
+    folderDetail
+  } = useContextSelector(AppListContext, (v) => v);
+  const { userInfo } = useUserStore();
+
+  const [createAppType, setCreateAppType] = useState<CreateAppType>();
+  const {
+    isOpen: isOpenCreateHttpPlugin,
+    onOpen: onOpenCreateHttpPlugin,
+    onClose: onCloseCreateHttpPlugin
   } = useDisclosure();
+  const [editFolder, setEditFolder] = useState<EditFolderFormType>();
 
-  /* 点击删除 */
-  const onclickDelApp = useCallback(
-    async (id: string) => {
-      try {
-        await delModelById(id);
-        toast({
-          title: '删除成功',
-          status: 'success'
-        });
-        loadMyApps(true);
-      } catch (err: any) {
-        toast({
-          title: err?.message || t('common.Delete Failed'),
-          status: 'error'
-        });
-      }
+  const { runAsync: onCreateFolder } = useRequest2(postCreateAppFolder, {
+    onSuccess() {
+      loadMyApps();
     },
-    [toast, loadMyApps, t]
-  );
-
-  /* 加载模型 */
-  const { isFetching } = useQuery(['loadApps'], () => loadMyApps(true), {
-    refetchOnMount: true
+    errorToast: 'Error'
+  });
+  const { runAsync: onDeleFolder } = useRequest2(delAppById, {
+    onSuccess() {
+      router.replace({
+        query: {
+          parentId: folderDetail?.parentId
+        }
+      });
+    },
+    errorToast: 'Error'
   });
 
   return (
-    <PageContainer isLoading={isFetching} insertProps={{ px: [5, '48px'] }}>
-      <Flex pt={[4, '30px']} alignItems={'center'} justifyContent={'space-between'}>
-        <Box letterSpacing={1} fontSize={['20px', '24px']} color={'myGray.900'}>
-          {appT('My Apps')}
+    <MyBox
+      display={'flex'}
+      flexDirection={'column'}
+      isLoading={myApps.length === 0 && isFetchingApps}
+      h={'100%'}
+    >
+      {paths.length > 0 && (
+        <Box pt={[4, 6]} pl={3}>
+          <FolderPath
+            paths={paths}
+            hoverStyle={{ bg: 'myGray.200' }}
+            onClick={(parentId) => {
+              router.push({
+                query: {
+                  ...router.query,
+                  parentId
+                }
+              });
+            }}
+          />
         </Box>
-        <Button leftIcon={<AddIcon />} variant={'primaryOutline'} onClick={onOpenCreateModal}>
-          {commonT('New Create')}
-        </Button>
-      </Flex>
-      <Grid
-        py={[4, 6]}
-        gridTemplateColumns={['1fr', 'repeat(2,1fr)', 'repeat(3,1fr)', 'repeat(4,1fr)']}
-        gridGap={5}
-      >
-        {myApps.map((app) => (
-          <MyTooltip
-            key={app._id}
-            label={userInfo?.team.canWrite ? appT('To Settings') : appT('To Chat')}
+      )}
+      <Flex gap={5} flex={'1 0 0'} h={0}>
+        <Box
+          flex={'1 0 0'}
+          h={'100%'}
+          pr={folderDetail ? [4, 6] : [4, 10]}
+          pl={3}
+          overflowY={'auto'}
+          overflowX={'hidden'}
+        >
+          <Flex
+            pt={paths.length > 0 ? 4 : [4, 6]}
+            alignItems={'center'}
+            justifyContent={'space-between'}
           >
-            <Box
-              lineHeight={1.5}
-              h={'100%'}
-              py={3}
-              px={5}
-              cursor={'pointer'}
-              borderWidth={'1.5px'}
-              borderColor={'borderColor.low'}
-              bg={'white'}
-              borderRadius={'md'}
-              userSelect={'none'}
-              position={'relative'}
-              display={'flex'}
-              flexDirection={'column'}
-              _hover={{
-                borderColor: 'primary.300',
-                boxShadow: '1.5',
-                '& .delete': {
-                  display: 'flex'
+            <LightRowTabs
+              list={[
+                {
+                  label: appT('type.All'),
+                  value: 'ALL'
                 },
-                '& .chat': {
-                  display: 'flex'
+                {
+                  label: appT('type.Simple bot'),
+                  value: AppTypeEnum.simple
+                },
+                {
+                  label: appT('type.Workflow bot'),
+                  value: AppTypeEnum.workflow
+                },
+                {
+                  label: appT('type.Plugin'),
+                  value: AppTypeEnum.plugin
                 }
+              ]}
+              value={appType}
+              inlineStyles={{ px: 0.5 }}
+              gap={5}
+              display={'flex'}
+              alignItems={'center'}
+              fontSize={['sm', 'md']}
+              onChange={(e) => {
+                router.push({
+                  query: {
+                    ...router.query,
+                    type: e
+                  }
+                });
               }}
-              onClick={() => {
-                if (userInfo?.team.canWrite) {
-                  router.push(`/app/detail?appId=${app._id}`);
-                } else {
-                  router.push(`/chat?appId=${app._id}`);
-                }
-              }}
-            >
-              <Flex alignItems={'center'} h={'38px'}>
-                <Avatar src={app.avatar} borderRadius={'md'} w={'28px'} />
-                <Box ml={3}>{app.name}</Box>
-                {app.isOwner && userInfo?.team.canWrite && (
-                  <IconButton
-                    className="delete"
-                    position={'absolute'}
-                    top={4}
-                    right={4}
-                    size={'xsSquare'}
-                    variant={'whiteDanger'}
-                    icon={<MyIcon name={'delete'} w={'14px'} />}
-                    aria-label={'delete'}
-                    display={['', 'none']}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openConfirm(() => onclickDelApp(app._id))();
-                    }}
-                  />
-                )}
-              </Flex>
-              <Box
-                flex={1}
-                className={'textEllipsis3'}
-                py={2}
-                wordBreak={'break-all'}
-                fontSize={'sm'}
-                color={'myGray.600'}
-              >
-                {app.intro || '这个应用还没写介绍~'}
-              </Box>
-              <Flex h={'34px'} alignItems={'flex-end'}>
-                <Box flex={1}>
-                  <PermissionIconText permission={app.permission} color={'myGray.600'} />
-                </Box>
-                {userInfo?.team.canWrite && (
-                  <IconButton
-                    className="chat"
-                    size={'xsSquare'}
-                    variant={'whitePrimary'}
-                    icon={
-                      <MyTooltip label={'去聊天'}>
-                        <MyIcon name={'core/chat/chatLight'} w={'14px'} />
-                      </MyTooltip>
-                    }
-                    aria-label={'chat'}
-                    display={['', 'none']}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/chat?appId=${app._id}`);
-                    }}
-                  />
-                )}
-              </Flex>
-            </Box>
-          </MyTooltip>
-        ))}
-      </Grid>
+            />
 
-      {myApps.length === 0 && (
-        <Flex mt={'35vh'} flexDirection={'column'} alignItems={'center'}>
-          <MyIcon name="empty" w={'48px'} h={'48px'} color={'transparent'} />
-          <Box mt={2} color={'myGray.500'}>
-            还没有应用，快去创建一个吧！
+            {userInfo?.team.permission.hasWritePer &&
+              folderDetail?.type !== AppTypeEnum.httpPlugin && (
+                <MyMenu
+                  iconSize="1.5rem"
+                  Button={
+                    <Button variant={'primary'} leftIcon={<AddIcon />}>
+                      <Box>{t('common.Create New')}</Box>
+                    </Button>
+                  }
+                  menuList={[
+                    {
+                      children: [
+                        {
+                          icon: 'core/app/simpleBot',
+                          label: appT('type.Simple bot'),
+                          description: appT('type.Create simple bot tip'),
+                          onClick: () => setCreateAppType(AppTypeEnum.simple)
+                        },
+                        {
+                          icon: 'core/app/type/workflowFill',
+                          label: appT('type.Workflow bot'),
+                          description: appT('type.Create workflow tip'),
+                          onClick: () => setCreateAppType(AppTypeEnum.workflow)
+                        },
+                        {
+                          icon: 'core/app/type/pluginFill',
+                          label: appT('type.Plugin'),
+                          description: appT('type.Create one plugin tip'),
+                          onClick: () => setCreateAppType(AppTypeEnum.plugin)
+                        },
+                        {
+                          icon: 'core/app/type/httpPluginFill',
+                          label: appT('type.Http plugin'),
+                          description: appT('type.Create http plugin tip'),
+                          onClick: onOpenCreateHttpPlugin
+                        }
+                      ]
+                    },
+                    {
+                      children: [
+                        {
+                          icon: FolderIcon,
+                          label: t('Folder'),
+                          onClick: () => setEditFolder({})
+                        }
+                      ]
+                    }
+                  ]}
+                />
+              )}
+          </Flex>
+
+          <List />
+        </Box>
+        {!!folderDetail && isPc && (
+          <Box pt={[4, 6]} pr={[4, 6]}>
+            <FolderSlideCard
+              refreshDeps={[folderDetail._id]}
+              name={folderDetail.name}
+              intro={folderDetail.intro}
+              onEdit={() => {
+                setEditFolder({
+                  id: folderDetail._id,
+                  name: folderDetail.name,
+                  intro: folderDetail.intro
+                });
+              }}
+              onMove={() => setMoveAppId(folderDetail._id)}
+              deleteTip={appT('Confirm delete folder tip')}
+              onDelete={() => onDeleFolder(folderDetail._id)}
+              defaultPer={{
+                value: folderDetail.defaultPermission,
+                defaultValue: AppDefaultPermissionVal,
+                onChange: (e) => {
+                  return onUpdateApp(folderDetail._id, { defaultPermission: e });
+                }
+              }}
+              managePer={{
+                permission: folderDetail.permission,
+                onGetCollaboratorList: () => getCollaboratorList(folderDetail._id),
+                permissionList: AppPermissionList,
+                onUpdateCollaborators: ({
+                  tmbIds,
+                  permission
+                }: {
+                  tmbIds: string[];
+                  permission: number;
+                }) => {
+                  return postUpdateAppCollaborators({
+                    tmbIds,
+                    permission,
+                    appId: folderDetail._id
+                  });
+                },
+                onDelOneCollaborator: (tmbId: string) =>
+                  deleteAppCollaborators({
+                    appId: folderDetail._id,
+                    tmbId
+                  })
+              }}
+            />
           </Box>
-        </Flex>
+        )}
+      </Flex>
+
+      {!!editFolder && (
+        <EditFolderModal
+          {...editFolder}
+          onClose={() => setEditFolder(undefined)}
+          onCreate={(data) => onCreateFolder({ ...data, parentId })}
+          onEdit={({ id, ...data }) => onUpdateApp(id, data)}
+        />
       )}
-      <ConfirmModal />
-      {isOpenCreateModal && (
-        <CreateModal onClose={onCloseCreateModal} onSuccess={() => loadMyApps(true)} />
+      {!!createAppType && (
+        <CreateModal type={createAppType} onClose={() => setCreateAppType(undefined)} />
       )}
-    </PageContainer>
+      {isOpenCreateHttpPlugin && <HttpEditModal onClose={onCloseCreateHttpPlugin} />}
+    </MyBox>
   );
 };
+
+function ContextRender() {
+  return (
+    <AppListContextProvider>
+      <MyApps />
+    </AppListContextProvider>
+  );
+}
+
+export default ContextRender;
 
 export async function getServerSideProps(content: any) {
   return {
@@ -195,5 +293,3 @@ export async function getServerSideProps(content: any) {
     }
   };
 }
-
-export default MyApps;

@@ -11,7 +11,7 @@ import {
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import MyModal from '@fastgpt/web/components/common/MyModal';
-import MyTooltip from '@/components/MyTooltip';
+import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'next-i18next';
 import { useRequest } from '@fastgpt/web/hooks/useRequest';
@@ -75,16 +75,16 @@ const InputDataModal = ({
   });
 
   const tabList = [
-    { label: t('dataset.data.edit.Content'), id: TabEnum.content, icon: 'common/overviewLight' },
+    { label: t('dataset.data.edit.Content'), value: TabEnum.content, icon: 'common/overviewLight' },
     {
       label: t('dataset.data.edit.Index', { amount: indexes.length }),
-      id: TabEnum.index,
+      value: TabEnum.index,
       icon: 'kbTest'
     },
     ...(dataId
-      ? [{ label: t('dataset.data.edit.Delete'), id: TabEnum.delete, icon: 'delete' }]
+      ? [{ label: t('dataset.data.edit.Delete'), value: TabEnum.delete, icon: 'delete' }]
       : []),
-    { label: t('dataset.data.edit.Course'), id: TabEnum.doc, icon: 'common/courseLight' }
+    { label: t('dataset.data.edit.Course'), value: TabEnum.doc, icon: 'common/courseLight' }
   ];
 
   const { ConfirmModal, openConfirm } = useConfirm({
@@ -243,10 +243,10 @@ const InputDataModal = ({
             mb={6}
             fontSize={'sm'}
           />
-          <SideTabs
+          <SideTabs<TabEnum>
             list={tabList}
-            activeId={currentTab}
-            onChange={async (e: any) => {
+            value={currentTab}
+            onChange={async (e) => {
               if (e === TabEnum.delete) {
                 return openConfirm(onDeleteData)();
               }
@@ -258,7 +258,7 @@ const InputDataModal = ({
           />
         </Box>
         <Flex flexDirection={'column'} pb={8} flex={1} h={'100%'}>
-          <Box fontSize={'lg'} px={5} py={3} fontWeight={'medium'}>
+          <Box fontSize={'md'} px={5} py={3} fontWeight={'medium'}>
             {currentTab === TabEnum.content && (
               <>{dataId ? t('dataset.data.Update Data') : t('dataset.data.Input Data')}</>
             )}
@@ -311,7 +311,6 @@ const InputDataModal = ({
                     ) : (
                       <Textarea
                         maxLength={maxToken}
-                        fontSize={'sm'}
                         rows={10}
                         borderColor={'transparent'}
                         px={0}
@@ -366,9 +365,11 @@ const InputDataModal = ({
             <Button variant={'whiteBase'} mr={3} onClick={onClose}>
               {t('common.Close')}
             </Button>
-            <MyTooltip label={collection.canWrite ? '' : t('dataset.data.Can not edit')}>
+            <MyTooltip
+              label={collection.permission.hasWritePer ? '' : t('dataset.data.Can not edit')}
+            >
               <Button
-                isDisabled={!collection.canWrite}
+                isDisabled={!collection.permission.hasWritePer}
                 // @ts-ignore
                 onClick={handleSubmit(dataId ? onUpdateData : sureImportData)}
               >

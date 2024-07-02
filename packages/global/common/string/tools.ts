@@ -64,4 +64,30 @@ export const getNanoid = (size = 12) => {
   return `${firstChar}${randomsStr}`;
 };
 
+/* Custom text to reg, need to replace special chats */
 export const replaceRegChars = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export const getRegQueryStr = (text: string, flags = 'i') => {
+  const formatText = replaceRegChars(text);
+  const chars = formatText.split('');
+  const regexPattern = chars.join('.*');
+
+  return new RegExp(regexPattern, flags);
+};
+
+/* slice json str */
+export const sliceJsonStr = (str: string) => {
+  str = str.replace(/(\\n|\\)/g, '').replace(/  /g, '');
+
+  const jsonRegex = /{(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*}/g;
+  const matches = str.match(jsonRegex);
+
+  if (!matches) {
+    return '';
+  }
+
+  // 找到第一个完整的 JSON 字符串
+  const jsonStr = matches[0];
+
+  return jsonStr;
+};

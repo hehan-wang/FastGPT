@@ -59,7 +59,9 @@ function requestFinish({ url }: { url: string }) {
  */
 function startInterceptors(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
   if (config.headers && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${useUserStore.getState().userInfo?.team?.lafAccount?.token || ''}`;
+    config.headers.Authorization = `Bearer ${
+      useUserStore.getState().userInfo?.team?.lafAccount?.token || ''
+    }`;
   }
 
   return config;
@@ -118,7 +120,6 @@ function responseError(
       })
         .then((res) => {
           putUpdateTeam({
-            teamId: useUserStore.getState().userInfo?.team.teamId || '',
             lafAccount: {
               ...useUserStore.getState().userInfo?.team?.lafAccount,
               token: res

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { jsonRes } from '@fastgpt/service/common/response';
-import { authApp } from '@fastgpt/service/support/permission/auth/app';
-import { getGuideModule, replaceAppChatConfig } from '@fastgpt/global/core/workflow/utils';
+import { authApp } from '@fastgpt/service/support/permission/app/auth';
+import { getGuideModule, getAppChatConfig } from '@fastgpt/global/core/workflow/utils';
 import { getChatModelNameListByModules } from '@/service/core/app/workflow';
 import type { InitChatProps, InitChatResponse } from '@/global/core/chat/api.d';
 import { MongoChat } from '@fastgpt/service/core/chat/chatSchema';
@@ -10,6 +10,7 @@ import { ChatErrEnum } from '@fastgpt/global/common/error/code/chat';
 import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/workflow/runtime/constants';
 import { getAppLatestVersion } from '@fastgpt/service/core/app/controller';
 import { NextAPI } from '@/service/middleware/entry';
+import { ReadPermissionVal } from '@fastgpt/global/support/permission/constant';
 
 async function handler(
   req: NextApiRequest,
@@ -30,13 +31,13 @@ async function handler(
       req,
       authToken: true,
       appId,
-      per: 'r'
+      per: ReadPermissionVal
     }),
     chatId ? MongoChat.findOne({ appId, chatId }) : undefined
   ]);
 
   // auth chat permission
-  if (chat && !app.canWrite && String(tmbId) !== String(chat?.tmbId)) {
+  if (chat && !app.permission.hasManagePer && String(tmbId) !== String(chat?.tmbId)) {
     throw new Error(ChatErrEnum.unAuthChat);
   }
 
@@ -61,10 +62,12 @@ async function handler(
     variables: chat?.variables || {},
     history,
     app: {
-      userGuideModule: replaceAppChatConfig({
-        node: getGuideModule(nodes),
-        variableList: chat?.variableList,
-        welcomeText: chat?.welcomeText
+      chatConfig: getAppChatConfig({
+        chatConfig: app.chatConfig,
+        systemConfigNode: getGuideModule(nodes),
+        storeVariables: chat?.variableList,
+        storeWelcomeText: chat?.welcomeText,
+        isPublicFetch: false
       }),
       chatModels: getChatModelNameListByModules(nodes),
       name: app.name,

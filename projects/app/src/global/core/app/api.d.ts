@@ -1,29 +1,25 @@
+import { ParentIdType } from '@fastgpt/global/common/parentFolder/type';
 import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import { AppSchema } from '@fastgpt/global/core/app/type';
 
-export type CreateAppParams = {
-  name?: string;
-  avatar?: string;
-  type?: `${AppTypeEnum}`;
-  modules: AppSchema['modules'];
-  edges?: AppSchema['edges'];
-};
-
 export type AppUpdateParams = {
+  parentId?: ParentIdType;
   name?: string;
-  type?: `${AppTypeEnum}`;
+  type?: AppTypeEnum;
   avatar?: string;
   intro?: string;
   nodes?: AppSchema['modules'];
   edges?: AppSchema['edges'];
-  permission?: AppSchema['permission'];
+  chatConfig?: AppSchema['chatConfig'];
   teamTags?: AppSchema['teamTags'];
+  defaultPermission?: AppSchema['defaultPermission'];
 };
 
 export type PostPublishAppProps = {
-  type: `${AppTypeEnum}`;
+  type: AppTypeEnum;
   nodes: AppSchema['modules'];
   edges: AppSchema['edges'];
+  chatConfig: AppSchema['chatConfig'];
 };
 
 export type PostRevertAppProps = {
@@ -31,4 +27,5 @@ export type PostRevertAppProps = {
   // edit workflow
   editNodes: AppSchema['modules'];
   editEdges: AppSchema['edges'];
+  editChatConfig: AppSchema['chatConfig'];
 };

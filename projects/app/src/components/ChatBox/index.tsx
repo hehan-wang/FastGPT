@@ -15,15 +15,12 @@ import type {
   ChatSiteItemType,
   UserChatItemValueItemType
 } from '@fastgpt/global/core/chat/type.d';
-import type { ChatHistoryItemResType } from '@fastgpt/global/core/chat/type.d';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import { Box, Flex, Checkbox } from '@chakra-ui/react';
 import { EventNameEnum, eventBus } from '@/web/common/utils/eventbus';
 import { chats2GPTMessages } from '@fastgpt/global/core/chat/adapt';
-import { StoreNodeItemType } from '@fastgpt/global/core/workflow/type/index.d';
 import { VariableInputEnum } from '@fastgpt/global/core/workflow/constants';
-import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/workflow/runtime/constants';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
@@ -33,9 +30,9 @@ import {
   updateChatAdminFeedback,
   updateChatUserFeedback
 } from '@/web/core/chat/api';
-import type { AdminMarkType } from './SelectMarkCollection';
+import type { AdminMarkType } from './components/SelectMarkCollection';
 
-import MyTooltip from '../MyTooltip';
+import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 
 import { postQuestionGuide } from '@/web/core/ai/api';
 import type {
@@ -45,7 +42,7 @@ import type {
   ChatBoxInputType,
   ChatBoxInputFormType
 } from './type.d';
-import MessageInput from './MessageInput';
+import ChatInput from './Input/ChatInput';
 import ChatBoxDivider from '../core/chat/Divider';
 import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
 import { getNanoid } from '@fastgpt/global/common/string/tools';
@@ -53,17 +50,20 @@ import { ChatItemValueTypeEnum, ChatRoleEnum } from '@fastgpt/global/core/chat/c
 import { formatChatValue2InputType } from './utils';
 import { textareaMinH } from './constants';
 import { SseResponseEventEnum } from '@fastgpt/global/core/workflow/runtime/constants';
-import ChatProvider, { useChatProviderStore } from './Provider';
+import ChatProvider, { ChatBoxContext } from './Provider';
 
 import ChatItem from './components/ChatItem';
 
 import dynamic from 'next/dynamic';
 import { useCreation } from 'ahooks';
+import { AppChatConfigType } from '@fastgpt/global/core/app/type';
+import type { StreamResponseType } from '@/web/common/api/fetch';
+import { useContextSelector } from 'use-context-selector';
 
-const ResponseTags = dynamic(() => import('./ResponseTags'));
-const FeedbackModal = dynamic(() => import('./FeedbackModal'));
-const ReadFeedbackModal = dynamic(() => import('./ReadFeedbackModal'));
-const SelectMarkCollection = dynamic(() => import('./SelectMarkCollection'));
+const ResponseTags = dynamic(() => import('./components/ResponseTags'));
+const FeedbackModal = dynamic(() => import('./components/FeedbackModal'));
+const ReadFeedbackModal = dynamic(() => import('./components/ReadFeedbackModal'));
+const SelectMarkCollection = dynamic(() => import('./components/SelectMarkCollection'));
 const Empty = dynamic(() => import('./components/Empty'));
 const WelcomeBox = dynamic(() => import('./components/WelcomeBox'));
 const VariableInput = dynamic(() => import('./components/VariableInput'));
@@ -81,7 +81,7 @@ type Props = OutLinkChatAuthProps & {
   showEmptyIntro?: boolean;
   appAvatar?: string;
   userAvatar?: string;
-  userGuideModule?: StoreNodeItemType;
+  chatConfig?: AppChatConfigType;
   showFileSelector?: boolean;
   active?: boolean; // can use
   appId: string;
@@ -90,12 +90,11 @@ type Props = OutLinkChatAuthProps & {
   chatId?: string;
 
   onUpdateVariable?: (e: Record<string, any>) => void;
-  onStartChat?: (e: StartChatFnProps) => Promise<{
-    responseText: string;
-    [DispatchNodeResponseKeyEnum.nodeResponse]: ChatHistoryItemResType[];
-    newVariables?: Record<string, any>;
-    isNewChat?: boolean;
-  }>;
+  onStartChat?: (e: StartChatFnProps) => Promise<
+    StreamResponseType & {
+      isNewChat?: boolean;
+    }
+  >;
   onDelMessage?: (e: { contentId: string }) => void;
 };
 
@@ -149,7 +148,7 @@ const ChatBox = (
 
   const {
     welcomeText,
-    variableNodes,
+    variableList,
     questionGuide,
     startSegmentedAudio,
     finishSegmentedAudio,
@@ -158,7 +157,7 @@ const ChatBox = (
     chatHistories,
     setChatHistories,
     isChatting
-  } = useChatProviderStore();
+  } = useContextSelector(ChatBoxContext, (v) => v);
 
   // compute variable input is finish.
   const chatForm = useForm<ChatBoxInputFormType>({
@@ -174,8 +173,8 @@ const ChatBox = (
 
   /* variable */
   const filterVariableNodes = useCreation(
-    () => variableNodes.filter((item) => item.type !== VariableInputEnum.custom),
-    [variableNodes]
+    () => variableList.filter((item) => item.type !== VariableInputEnum.custom),
+    [variableList]
   );
 
   // 滚动到底部
@@ -207,7 +206,8 @@ const ChatBox = (
       status,
       name,
       tool,
-      autoTTSResponse
+      autoTTSResponse,
+      variables
     }: generatingMessageProps & { autoTTSResponse?: boolean }) => {
       setChatHistories((state) =>
         state.map((item, index) => {
@@ -290,6 +290,8 @@ const ChatBox = (
                 return val;
               })
             };
+          } else if (event === SseResponseEventEnum.updateVariables && variables) {
+            setValue('variables', variables);
           }
 
           return item;
@@ -297,7 +299,7 @@ const ChatBox = (
       );
       generatingScroll();
     },
-    [generatingScroll, setChatHistories, splitText2Audio]
+    [generatingScroll, setChatHistories, setValue, splitText2Audio]
   );
 
   // 重置输入内容
@@ -390,9 +392,9 @@ const ChatBox = (
             return;
           }
 
-          // delete invalid variables， 只保留在 variableNodes 中的变量
+          // delete invalid variables， 只保留在 variableList 中的变量
           const requestVariables: Record<string, any> = {};
-          variableNodes?.forEach((item) => {
+          variableList?.forEach((item) => {
             requestVariables[item.key] = variables[item.key] || '';
           });
 
@@ -466,7 +468,6 @@ const ChatBox = (
             const {
               responseData,
               responseText,
-              newVariables,
               isNewChat = false
             } = await onStartChat({
               chatList: newChatList,
@@ -475,8 +476,6 @@ const ChatBox = (
               generatingMessage: (e) => generatingMessage({ ...e, autoTTSResponse }),
               variables: requestVariables
             });
-
-            newVariables && setValue('variables', newVariables);
 
             isNewChatReplace.current = isNewChat;
 
@@ -561,12 +560,11 @@ const ChatBox = (
       resetInputVal,
       setAudioPlayingChatId,
       setChatHistories,
-      setValue,
       splitText2Audio,
       startSegmentedAudio,
       t,
       toast,
-      variableNodes
+      variableList
     ]
   );
 
@@ -696,7 +694,7 @@ const ChatBox = (
         } catch (error) {}
       };
     },
-    [appId, chatId, feedbackType, outLinkUid, shareId, teamId, teamToken]
+    [appId, chatId, feedbackType, outLinkUid, setChatHistories, shareId, teamId, teamToken]
   );
   const onCloseUserLike = useCallback(
     (chat: ChatSiteItemType) => {
@@ -907,7 +905,7 @@ const ChatBox = (
           {!!filterVariableNodes?.length && (
             <VariableInput
               appAvatar={appAvatar}
-              variableNodes={filterVariableNodes}
+              variableList={filterVariableNodes}
               chatForm={chatForm}
               onSubmitVariables={(data) => {
                 setValue('chatStarted', true);
@@ -999,8 +997,8 @@ const ChatBox = (
         </Box>
       </Box>
       {/* message input */}
-      {onStartChat && (chatStarted || filterVariableNodes.length === 0) && active && (
-        <MessageInput
+      {onStartChat && (chatStarted || filterVariableNodes.length === 0) && active && appId && (
+        <ChatInput
           onSendMessage={sendPrompt}
           onStop={() => chatController.current?.abort('stop')}
           TextareaDom={TextareaDom}

@@ -1,5 +1,4 @@
 import type { FlowNodeTemplateType, StoreNodeItemType } from '../workflow/type';
-
 import { AppTypeEnum } from './constants';
 import { PermissionTypeEnum } from '../../support/permission/constant';
 import { VariableInputEnum } from '../workflow/constants';
@@ -7,42 +6,57 @@ import { SelectedDatasetType } from '../workflow/api';
 import { DatasetSearchModeEnum } from '../dataset/constants';
 import { TeamTagSchema as TeamTagsSchemaType } from '@fastgpt/global/support/user/team/type.d';
 import { StoreEdgeItemType } from '../workflow/type/edge';
+import { PermissionValueType } from '../../support/permission/type';
+import { AppPermission } from '../../support/permission/app/controller';
+import { ParentIdType } from '../../common/parentFolder/type';
 
-export interface AppSchema {
+export type AppSchema = {
   _id: string;
+  parentId?: ParentIdType;
   teamId: string;
   tmbId: string;
-  name: string;
-  type: `${AppTypeEnum}`;
+  type: AppTypeEnum;
   version?: 'v1' | 'v2';
+
+  name: string;
   avatar: string;
   intro: string;
-  updateTime: number;
+  updateTime: Date;
 
   modules: StoreNodeItemType[];
   edges: StoreEdgeItemType[];
+  pluginData?: {
+    nodeVersion?: string;
+    pluginUniId?: string; // plugin unique id(plugin name)
+    apiSchemaStr?: string; // api schema string
+    customHeaders?: string;
+  };
 
   // App system config
+  chatConfig: AppChatConfigType;
   scheduledTriggerConfig?: AppScheduledTriggerConfigType | null;
   scheduledTriggerNextTime?: Date;
 
-  permission: `${PermissionTypeEnum}`;
   inited?: boolean;
   teamTags: string[];
-}
+  defaultPermission: PermissionValueType;
+};
 
 export type AppListItemType = {
   _id: string;
+  tmbId: string;
   name: string;
   avatar: string;
   intro: string;
-  isOwner: boolean;
-  permission: `${PermissionTypeEnum}`;
+  type: AppTypeEnum;
+  updateTime: Date;
+  defaultPermission: PermissionValueType;
+  permission: AppPermission;
+  pluginData?: AppSchema['pluginData'];
 };
 
 export type AppDetailType = AppSchema & {
-  isOwner: boolean;
-  canWrite: boolean;
+  permission: AppPermission;
 };
 
 export type AppSimpleEditFormType = {
@@ -66,33 +80,19 @@ export type AppSimpleEditFormType = {
     datasetSearchExtensionBg?: string;
   };
   selectedTools: FlowNodeTemplateType[];
-  userGuide: {
-    welcomeText: string;
-    variables: {
-      id: string;
-      key: string;
-      label: string;
-      type: `${VariableInputEnum}`;
-      required: boolean;
-      maxLen: number;
-      enums: {
-        value: string;
-      }[];
-    }[];
-    questionGuide: boolean;
-    tts: {
-      type: 'none' | 'web' | 'model';
-      model?: string | undefined;
-      voice?: string | undefined;
-      speed?: number | undefined;
-    };
-    whisper: AppWhisperConfigType;
-    scheduleTrigger: AppScheduledTriggerConfigType | null;
-    questionGuideText: AppQuestionGuideTextConfigType;
-  };
+  chatConfig: AppChatConfigType;
 };
 
-/* app function config */
+/* app chat config type */
+export type AppChatConfigType = {
+  welcomeText?: string;
+  variables?: VariableItemType[];
+  questionGuide?: boolean;
+  ttsConfig?: AppTTSConfigType;
+  whisperConfig?: AppWhisperConfigType;
+  scheduledTriggerConfig?: AppScheduledTriggerConfigType;
+  chatInputGuide?: ChatInputGuideConfigType;
+};
 export type SettingAIDataType = {
   model: string;
   temperature: number;
@@ -125,10 +125,9 @@ export type AppWhisperConfigType = {
   autoTTSResponse: boolean;
 };
 // question guide text
-export type AppQuestionGuideTextConfigType = {
+export type ChatInputGuideConfigType = {
   open: boolean;
-  textList: string[];
-  customURL: string;
+  customUrl: string;
 };
 // interval timer
 export type AppScheduledTriggerConfigType = {

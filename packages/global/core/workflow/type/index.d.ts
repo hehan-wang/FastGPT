@@ -20,6 +20,9 @@ import { RuntimeNodeItemType } from '../runtime/type';
 import { PluginTypeEnum } from '../../plugin/constants';
 import { RuntimeEdgeItemType, StoreEdgeItemType } from './edge';
 import { NextApiResponse } from 'next';
+import { AppDetailType, AppSchema } from '../../app/type';
+import { ParentIdType } from 'common/parentFolder/type';
+import { AppTypeEnum } from 'core/app/constants';
 
 export type FlowNodeCommonType = {
   flowNodeType: FlowNodeTypeEnum; // render node card
@@ -36,8 +39,8 @@ export type FlowNodeCommonType = {
 
   // plugin data
   pluginId?: string;
-  pluginType?: `${PluginTypeEnum}`;
-  parentId?: string;
+  pluginType?: AppTypeEnum;
+  // parentId: ParentIdType;
 };
 
 export type FlowNodeTemplateType = FlowNodeCommonType & {
@@ -64,7 +67,6 @@ export type FlowNodeTemplateType = FlowNodeCommonType & {
   // action
   forbidDelete?: boolean; // forbid delete
   unique?: boolean;
-  nodeVersion?: string;
 };
 export type FlowNodeItemType = FlowNodeTemplateType & {
   nodeId: string;
@@ -105,8 +107,8 @@ export type NodeSourceNodeItemType = {
 /* --------------- function type -------------------- */
 export type SelectAppItemType = {
   id: string;
-  name: string;
-  logo: string;
+  // name: string;
+  // logo?: string;
 };
 
 /* agent */
@@ -115,6 +117,7 @@ export type ClassifyQuestionAgentItemType = {
   key: string;
 };
 export type ContextExtractAgentItemType = {
+  valueType: 'string' | 'number' | 'boolean';
   desc: string;
   key: string;
   required: boolean;
@@ -130,7 +133,7 @@ export type ChatDispatchProps = {
   teamId: string;
   tmbId: string;
   user: UserModelSchema;
-  appId?: string;
+  app: AppDetailType | AppSchema;
   chatId?: string;
   responseChatItemId?: string;
   histories: ChatItemType[];

@@ -17,7 +17,6 @@ import type { UsageItemType } from '@fastgpt/global/support/wallet/usage/type';
 import { usePagination } from '@fastgpt/web/hooks/usePagination';
 import { useLoading } from '@fastgpt/web/hooks/useLoading';
 import dayjs from 'dayjs';
-import MyIcon from '@fastgpt/web/components/common/Icon';
 import DateRangePicker, {
   type DateRangeType
 } from '@fastgpt/web/components/common/DateRangePicker';
@@ -31,6 +30,7 @@ import { getTeamMembers } from '@/web/support/user/team/api';
 import Avatar from '@/components/Avatar';
 import MySelect from '@fastgpt/web/components/common/MySelect';
 import { formatNumber } from '@fastgpt/global/common/math/tools';
+import EmptyTip from '@fastgpt/web/components/common/EmptyTip';
 const UsageDetail = dynamic(() => import('./UsageDetail'));
 
 const UsageTable = () => {
@@ -59,7 +59,7 @@ const UsageTable = () => {
   const [selectTmbId, setSelectTmbId] = useState(userInfo?.team?.tmbId);
   const { data: members = [] } = useQuery(['getMembers', userInfo?.team?.teamId], () => {
     if (!userInfo?.team?.teamId) return [];
-    return getTeamMembers(userInfo.team.teamId);
+    return getTeamMembers();
   });
   const tmbList = useMemo(
     () =>
@@ -105,7 +105,7 @@ const UsageTable = () => {
         px={[3, 8]}
         alignItems={['flex-end', 'center']}
       >
-        {tmbList.length > 1 && userInfo?.team?.canWrite && (
+        {tmbList.length > 1 && userInfo?.team?.permission.hasWritePer && (
           <Flex alignItems={'center'}>
             <Box mr={2} flexShrink={0}>
               {t('support.user.team.member')}
@@ -130,7 +130,14 @@ const UsageTable = () => {
           <Pagination />
         </Flex>
       </Flex>
-      <TableContainer px={[3, 8]} position={'relative'} flex={'1 0 0'} h={0} overflowY={'auto'}>
+      <TableContainer
+        mt={2}
+        px={[3, 8]}
+        position={'relative'}
+        flex={'1 0 0'}
+        h={0}
+        overflowY={'auto'}
+      >
         <Table>
           <Thead>
             <Tr>
@@ -171,14 +178,7 @@ const UsageTable = () => {
         </Table>
       </TableContainer>
 
-      {!isLoading && usages.length === 0 && (
-        <Flex flex={'1 0 0'} flexDirection={'column'} alignItems={'center'}>
-          <MyIcon name="empty" w={'48px'} h={'48px'} color={'transparent'} />
-          <Box mt={2} color={'myGray.500'}>
-            无使用记录~
-          </Box>
-        </Flex>
-      )}
+      {!isLoading && usages.length === 0 && <EmptyTip text="无使用记录~"></EmptyTip>}
 
       <Loading loading={isLoading} fixed={false} />
       {!!usageDetail && (

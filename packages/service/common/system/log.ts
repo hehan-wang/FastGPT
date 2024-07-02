@@ -1,18 +1,56 @@
 import dayjs from 'dayjs';
+import chalk from 'chalk';
+import { isProduction } from './constants';
+
+enum LogLevelEnum {
+  debug = 0,
+  info = 1,
+  warn = 2,
+  error = 3
+}
+const logMap = {
+  [LogLevelEnum.debug]: {
+    levelLog: chalk.green('[Debug]')
+  },
+  [LogLevelEnum.info]: {
+    levelLog: chalk.blue('[Info]')
+  },
+  [LogLevelEnum.warn]: {
+    levelLog: chalk.yellow('[Warn]')
+  },
+  [LogLevelEnum.error]: {
+    levelLog: chalk.red('[Error]')
+  }
+};
+const envLogLevelMap: Record<string, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3
+};
+
+const logLevel = (() => {
+  if (!isProduction) return LogLevelEnum.debug;
+  const envLogLevel = (process.env.LOG_LEVEL || 'info').toLocaleLowerCase();
+  if (!envLogLevel || envLogLevelMap[envLogLevel] === undefined) return LogLevelEnum.info;
+  return envLogLevelMap[envLogLevel];
+})();
 
 /* add logger */
 export const addLog = {
-  log(level: 'info' | 'warn' | 'error', msg: string, obj: Record<string, any> = {}) {
+  log(level: LogLevelEnum, msg: string, obj: Record<string, any> = {}) {
+    if (level < logLevel) return;
+
     const stringifyObj = JSON.stringify(obj);
     const isEmpty = Object.keys(obj).length === 0;
 
     console.log(
-      `[${level.toLocaleUpperCase()}] ${dayjs().format('YYYY-MM-DD HH:mm:ss')} ${msg} ${
-        level !== 'error' && !isEmpty ? stringifyObj : ''
+      `${logMap[level].levelLog} ${dayjs().format('YYYY-MM-DD HH:mm:ss')} ${msg} ${
+        level !== LogLevelEnum.error && !isEmpty ? stringifyObj : ''
       }`
     );
 
-    level === 'error' && console.error(obj);
+    level === LogLevelEnum.error && console.error(obj);
 
     const lokiUrl = process.env.LOKI_LOG_URL as string;
     if (!lokiUrl) return;
@@ -44,14 +82,17 @@ export const addLog = {
       });
     } catch (error) {}
   },
+  debug(msg: string, obj?: Record<string, any>) {
+    this.log(LogLevelEnum.debug, msg, obj);
+  },
   info(msg: string, obj?: Record<string, any>) {
-    this.log('info', msg, obj);
+    this.log(LogLevelEnum.info, msg, obj);
   },
   warn(msg: string, obj?: Record<string, any>) {
-    this.log('warn', msg, obj);
+    this.log(LogLevelEnum.warn, msg, obj);
   },
   error(msg: string, error?: any) {
-    this.log('error', msg, {
+    this.log(LogLevelEnum.error, msg, {
       message: error?.message || error,
       stack: error?.stack,
       ...(error?.config && {
